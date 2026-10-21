@@ -56,7 +56,7 @@ export const initialDepartments: Department[] = [
   },
   {
     id: "dep-3",
-    name: "Eclésia Kids (Infantil)",
+    name: "ATOS Kids (Infantil)",
     slug: "infantil",
     description: "Evangelização e ensino bíblico lúdico e seguro para crianças de 0 a 11 anos.",
     iconName: "Baby",

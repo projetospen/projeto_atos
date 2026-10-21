@@ -91,13 +91,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-semibold mb-3 border border-amber-400/30">
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Painel Administrativo Eclesiástico</span>
+            <span>Plataforma ATOS • Gestão Eclesiástica</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Graça e Paz, Administração!
           </h1>
           <p className="mt-2 text-sm text-slate-300 leading-relaxed">
-            Gestão integrada da <span className="font-semibold text-amber-200">{churchProfile.name}</span>. Acompanhe a membresia, departamentos, escalas de culto deste final de semana e o fluxo da tesouraria.
+            Gestão integrada da <span className="font-semibold text-amber-200">{churchProfile.name}</span> no sistema <strong className="text-amber-300">ATOS</strong>. Acompanhe a membresia, departamentos, escalas de culto deste final de semana e o fluxo da tesouraria.
           </p>
           <div className="mt-5 flex flex-wrap gap-2.5">
             <button

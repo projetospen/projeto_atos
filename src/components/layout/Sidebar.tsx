@@ -72,16 +72,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       `}>
         {/* Brand / Church Header */}
         <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/10">
-            <Church className="w-6 h-6 text-slate-950" />
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20">
+            <span className="font-black text-lg tracking-tight text-slate-950 font-serif">A</span>
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="font-bold text-slate-100 text-base leading-tight truncate">
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-white text-lg tracking-wider">ATOS</span>
+              <span className="text-[10px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.2 rounded-md">ADMIN</span>
+            </div>
+            <p className="text-xs text-slate-400 font-medium truncate">
               {churchProfile.name}
-            </h1>
-            <p className="text-xs text-amber-400 font-medium truncate flex items-center gap-1">
-              <span>Eclésia Admin</span>
-              <span className="text-[10px] text-slate-400 font-normal">v2.4</span>
             </p>
           </div>
         </div>

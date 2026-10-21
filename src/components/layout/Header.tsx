@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
       case 'financeiro': return 'Tesouraria & Livro Caixa';
       case 'relatorios': return 'Relatórios Estatísticos & Atas';
       case 'configuracoes': return 'Configurações da Igreja & Backup';
-      default: return 'Eclésia Admin';
+      default: return 'ATOS';
     }
   };
 

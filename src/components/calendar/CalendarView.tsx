@@ -123,7 +123,7 @@ export const CalendarView: React.FC = () => {
 
   // Generate .ics calendar file for download
   const handleExportICS = () => {
-    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Eclesia Admin//PT\n";
+    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//ATOS Admin//PT\n";
     filteredEvents.forEach(e => {
       const dStart = e.startDate.replace(/-/g, '') + 'T' + e.startTime.replace(/:/g, '') + '00';
       const endTimeFormatted = e.endTime ? e.endTime.replace(/:/g, '') + '00' : '220000';

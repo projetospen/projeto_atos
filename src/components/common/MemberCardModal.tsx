@@ -82,7 +82,7 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({
                 </div>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                REG: {member.id.replace('mem-', 'ECL-')}
+                REG: {member.id.replace('mem-', 'ATOS-')}
               </span>
             </div>
 

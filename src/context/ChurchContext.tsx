@@ -287,7 +287,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `backup_eclesia_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `backup_atos_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
