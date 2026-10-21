@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useChurch, NavTab } from '../../context/ChurchContext';
+import { ChurchEmblemRenderer } from '../common/ChurchEmblemRenderer';
+import { EmblemCustomizerModal } from '../common/EmblemCustomizerModal';
 import { 
   LayoutDashboard, 
   Users, 
@@ -9,9 +11,9 @@ import {
   CircleDollarSign, 
   FileText, 
   Settings, 
-  Church, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Palette
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -21,6 +23,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { activeTab, setActiveTab, churchProfile, members, events, departments } = useChurch();
+  const [isEmblemModalOpen, setIsEmblemModalOpen] = useState(false);
 
   const menuItems: { id: NavTab; label: string; icon: React.ElementType; badge?: string | number; badgeColor?: string }[] = [
     { id: 'dashboard', label: 'Visão Geral', icon: LayoutDashboard },
@@ -71,19 +74,54 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Brand / Church Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20">
-            <span className="font-black text-lg tracking-tight text-slate-950 font-serif">A</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-white text-lg tracking-wider">ATOS</span>
-              <span className="text-[10px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.2 rounded-md">ADMIN</span>
+        <div className="p-4 sm:p-5 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            {/* Clickable Emblem with Edit Trigger */}
+            <div 
+              onClick={() => setIsEmblemModalOpen(true)}
+              className="relative group cursor-pointer"
+              title="Clique para personalizar o emblema da igreja"
+            >
+              <ChurchEmblemRenderer 
+                emblem={churchProfile.emblem} 
+                churchName={churchProfile.name}
+                size="md"
+              />
+              <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-amber-300">
+                <Palette className="w-4 h-4" />
+              </div>
             </div>
-            <p className="text-xs text-slate-400 font-medium truncate">
-              {churchProfile.name}
-            </p>
+
+            {/* Church Name Highlighted at TOP, Platform Name (ATOS) BELOW */}
+            <div className="min-w-0 flex-1">
+              {/* Church Name (IN HIGHLIGHT) */}
+              <h1 
+                className="font-extrabold text-white text-sm sm:text-base leading-snug line-clamp-2 hover:text-amber-200 transition-colors"
+                title={churchProfile.name}
+              >
+                {churchProfile.name}
+              </h1>
+
+              {/* Platform Name (ATOS) Positioned BELOW */}
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-xs font-black tracking-widest text-amber-400">
+                  ATOS
+                </span>
+                <span className="text-[9px] bg-slate-800 text-slate-300 font-semibold px-1.5 py-0.5 rounded border border-slate-700/80 uppercase">
+                  Gestão Eclesiástica
+                </span>
+              </div>
+            </div>
           </div>
+
+          {/* Quick Emblem Customize Button */}
+          <button
+            onClick={() => setIsEmblemModalOpen(true)}
+            className="mt-3 w-full py-1.5 px-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-[11px] text-slate-300 hover:text-amber-300 border border-slate-700/60 flex items-center justify-center gap-1.5 transition-colors cursor-pointer group"
+          >
+            <Palette className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span>Personalizar Emblema da Igreja</span>
+          </button>
         </div>
 
         {/* Quick Church Verse Pill */}
@@ -147,6 +185,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </aside>
+
+      {/* Emblem Customizer Modal */}
+      <EmblemCustomizerModal
+        isOpen={isEmblemModalOpen}
+        onClose={() => setIsEmblemModalOpen(false)}
+      />
     </>
   );
 };

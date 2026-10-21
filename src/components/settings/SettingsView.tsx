@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useChurch } from '../../context/ChurchContext';
 import { ChurchProfile } from '../../types';
+import { ChurchEmblemRenderer } from '../common/ChurchEmblemRenderer';
+import { EmblemCustomizerModal } from '../common/EmblemCustomizerModal';
 import { 
   Settings, 
   Church, 
@@ -12,7 +14,9 @@ import {
   AlertTriangle,
   Building2,
   ShieldCheck,
-  CreditCard
+  CreditCard,
+  Palette,
+  Sparkles
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -29,8 +33,14 @@ export const SettingsView: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ChurchProfile>(churchProfile);
+  const [isEmblemModalOpen, setIsEmblemModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [importMessage, setImportMessage] = useState<{ text: string; success: boolean } | null>(null);
+
+  // Keep profile state synced with context
+  React.useEffect(() => {
+    setProfile(churchProfile);
+  }, [churchProfile]);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,6 +105,36 @@ export const SettingsView: React.FC = () => {
           </div>
 
           <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+            {/* Emblem Customization Card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <ChurchEmblemRenderer
+                  emblem={churchProfile.emblem}
+                  churchName={churchProfile.name}
+                  size="lg"
+                />
+                <div>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Emblema Oficial</span>
+                    <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-slate-300">Barra Lateral & Carteirinhas</span>
+                  </div>
+                  <h4 className="font-bold text-sm text-white">{churchProfile.name}</h4>
+                  <p className="text-[11px] text-slate-400">
+                    Símbolo configurado para a igreja na barra lateral e credenciais oficiais.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsEmblemModalOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+              >
+                <Palette className="w-4 h-4" />
+                <span>Personalizar Emblema</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Nome da Igreja / Ministério *</label>
@@ -326,6 +366,11 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <EmblemCustomizerModal
+        isOpen={isEmblemModalOpen}
+        onClose={() => setIsEmblemModalOpen(false)}
+      />
     </div>
   );
 };

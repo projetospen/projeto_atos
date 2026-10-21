@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Member, ChurchProfile } from '../../types';
+import { ChurchEmblemRenderer } from './ChurchEmblemRenderer';
 import { X, Printer, Download, QrCode, CheckCircle2, ShieldCheck, Church, Sparkles } from 'lucide-react';
 
 interface MemberCardModalProps {
@@ -69,9 +70,11 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({
             {/* Top Accent Bar */}
             <div className="flex items-center justify-between border-b border-amber-400/30 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-serif font-black shadow-md">
-                  <Church className="w-5 h-5 text-slate-950" />
-                </div>
+                <ChurchEmblemRenderer 
+                  emblem={churchProfile.emblem} 
+                  churchName={churchProfile.name}
+                  size="sm" 
+                />
                 <div>
                   <h4 className="font-bold text-sm tracking-wide text-amber-200 leading-tight">
                     {churchProfile.name}

@@ -164,6 +164,19 @@ export interface FinancialTransaction {
   createdBy: string;
 }
 
+export type EmblemType = 'icon' | 'monogram' | 'image';
+export type EmblemIcon = 'cross' | 'church' | 'flame' | 'book' | 'crown' | 'heart' | 'star' | 'sun' | 'shield';
+
+export interface ChurchEmblem {
+  type: EmblemType;
+  iconName?: EmblemIcon;
+  monogramText?: string;
+  imageUrl?: string;
+  gradient: string;
+  textColor?: string;
+  shape?: 'rounded' | 'circle' | 'shield';
+}
+
 export interface ChurchProfile {
   name: string;
   subtitle: string;
@@ -177,6 +190,7 @@ export interface ChurchProfile {
   cityState: string;
   foundingDate: string;
   logoUrl?: string;
+  emblem?: ChurchEmblem;
   mottoVerse: string;
   socialInstagram?: string;
   bankPixKey?: string;
