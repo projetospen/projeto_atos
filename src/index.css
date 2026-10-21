@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-100 text-slate-800 antialiased selection:bg-amber-400 selection:text-slate-950;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Print Styles: Hide UI chrome and isolate print targets */
+@media print {
+  body {
+    background: transparent !important;
+  }
+
+  aside, header, nav, button, .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .printable-card, .printable-receipt, .printable-letter, .printable-report {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    margin: 0 auto !important;
+  }
+}
