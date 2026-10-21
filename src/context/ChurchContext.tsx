@@ -244,6 +244,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [adminRole]);
 
   // --- MEMBER CRUD (Com salvamento no Supabase) ---
+  // --- MEMBER CRUD (Com salvamento no Supabase) ---
   const addMember = async (data: Omit<Member, 'id' | 'createdAt'>) => {
     const newMember: Member = {
       ...data,
@@ -253,7 +254,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setMembers(prev => [newMember, ...prev]);
 
     try {
-      await supabase.from('members').insert([{
+      const { error } = await supabase.from('members').insert([{
         id: newMember.id,
         name: newMember.name,
         email: (newMember as any).email || null,
@@ -264,8 +265,15 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         role: (newMember as any).role || 'Membro',
         status: (newMember as any).status || 'Ativo'
       }]);
-    } catch (err) {
-      console.error('Erro ao salvar membro no Supabase:', err);
+
+      if (error) {
+        alert("⚠️ Supabase recusou: " + error.message);
+        console.error("Erro Supabase:", error);
+      } else {
+        alert("✅ Membro gravado no Supabase com sucesso!");
+      }
+    } catch (err: any) {
+      alert("❌ Erro de conexão: " + err.message);
     }
   };
 
