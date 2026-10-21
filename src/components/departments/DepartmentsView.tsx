@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export const DepartmentsView: React.FC = () => {
-  const { departments, members } = useChurch();
+  const { departments, members, theme } = useChurch();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
@@ -59,20 +59,21 @@ export const DepartmentsView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-amber-600" />
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <Building2 className="w-5 h-5" style={{ color: theme.primaryHex }} />
             <span>Departamentos & Ministérios</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Organização dos ministérios, lideranças, escalas de trabalho, voluntários e orçamentos
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+          style={{ backgroundColor: theme.primaryHex }}
         >
           <Plus className="w-4 h-4" />
           <span>Novo Departamento</span>
@@ -89,7 +90,7 @@ export const DepartmentsView: React.FC = () => {
           return (
             <div 
               key={dept.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
             >
               <div>
                 {/* Gradient Header */}
@@ -109,29 +110,34 @@ export const DepartmentsView: React.FC = () => {
 
                 {/* Body Content */}
                 <div className="p-4 space-y-3 text-xs">
-                  <p className="text-slate-600 line-clamp-2 leading-relaxed text-[11px]">
+                  <p className="text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed text-[11px]">
                     {dept.description}
                   </p>
 
                   {/* Leader Info */}
-                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 shrink-0">
                       {leader?.photoUrl ? (
                         <img src={leader.photoUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-600 text-xs">
+                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 text-xs">
                           {leader?.name.charAt(0) || 'L'}
                         </div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[9px] uppercase font-bold text-amber-700 block">Líder Responsável</span>
-                      <p className="font-bold text-slate-800 text-xs truncate">{leader?.name || 'Não atribuído'}</p>
+                      <span 
+                        className="text-[9px] uppercase font-bold block"
+                        style={{ color: theme.primaryHex }}
+                      >
+                        Líder Responsável
+                      </span>
+                      <p className="font-bold text-slate-800 dark:text-white text-xs truncate">{leader?.name || 'Não atribuído'}</p>
                     </div>
                   </div>
 
                   {/* Details metadata */}
-                  <div className="space-y-1.5 text-[11px] text-slate-500 pt-1">
+                  <div className="space-y-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-1">
                     {dept.meetingSchedule && (
                       <p className="flex items-center gap-1.5 truncate">
                         <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -141,19 +147,23 @@ export const DepartmentsView: React.FC = () => {
                     {dept.monthlyBudget && (
                       <p className="flex items-center gap-1.5">
                         <DollarSign className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>Fundo Mensal: <strong className="text-slate-700">{formatCurrency(dept.monthlyBudget)}</strong></span>
+                        <span>Fundo Mensal: <strong className="text-slate-700 dark:text-slate-200">{formatCurrency(dept.monthlyBudget)}</strong></span>
                       </p>
                     )}
                   </div>
 
                   {/* Goals count preview */}
                   {dept.goals && dept.goals.length > 0 && (
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
-                        <Target className="w-3.5 h-3.5 text-amber-500" />
+                        <Target className="w-3.5 h-3.5" style={{ color: theme.primaryHex }} />
                         <span>{dept.goals.length} metas cadastradas</span>
                       </span>
-                      <span className="text-indigo-600 font-semibold group-hover:underline">
+                      <span 
+                        onClick={() => setDetailsDept(dept)}
+                        className="font-semibold cursor-pointer hover:underline"
+                        style={{ color: theme.primaryHex }}
+                      >
                         Ver detalhes
                       </span>
                     </div>
@@ -162,16 +172,17 @@ export const DepartmentsView: React.FC = () => {
               </div>
 
               {/* Bottom footer button */}
-              <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <button
                   onClick={() => handleOpenEdit(dept)}
-                  className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1"
+                  className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1 cursor-pointer"
                 >
                   Editar
                 </button>
                 <button
                   onClick={() => setDetailsDept(dept)}
-                  className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-2xs hover:bg-indigo-50/50 cursor-pointer"
+                  className="flex items-center gap-1 text-xs font-bold px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xs cursor-pointer"
+                  style={{ color: theme.primaryHex }}
                 >
                   <span>Gerenciar Equipe</span>
                   <ChevronRight className="w-3.5 h-3.5" />

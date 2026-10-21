@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const ReportsView: React.FC = () => {
-  const { members, departments, events, churchProfile } = useChurch();
+  const { members, departments, events, churchProfile, theme } = useChurch();
 
   const [activeReport, setActiveReport] = useState<'membresia' | 'aniversariantes' | 'carta_recomendacao'>('membresia');
   const [selectedMemberForLetter, setSelectedMemberForLetter] = useState<string>(members[0]?.id || '');
@@ -54,20 +54,21 @@ export const ReportsView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <FileText className="w-5 h-5" style={{ color: theme.primaryHex }} />
             <span>Relatórios Estatísticos & Documentos Eclesiásticos</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Relatórios demográficos da membresia, boletim de aniversariantes e cartas de transferência pastoral
           </p>
         </div>
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+          style={{ backgroundColor: theme.primaryHex }}
         >
           <Printer className="w-4 h-4" />
           <span>Imprimir Relatório</span>
@@ -75,11 +76,12 @@ export const ReportsView: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 bg-white rounded-t-2xl px-4 overflow-x-auto">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-2xl px-4 overflow-x-auto">
         <button
           onClick={() => setActiveReport('membresia')}
-          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 shrink-0 transition-colors ${
-            activeReport === 'membresia' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          style={activeReport === 'membresia' ? { borderBottomColor: theme.primaryHex, color: theme.primaryHex } : undefined}
+          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${
+            activeReport === 'membresia' ? 'border-current font-bold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -88,8 +90,9 @@ export const ReportsView: React.FC = () => {
 
         <button
           onClick={() => setActiveReport('aniversariantes')}
-          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 shrink-0 transition-colors ${
-            activeReport === 'aniversariantes' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          style={activeReport === 'aniversariantes' ? { borderBottomColor: theme.primaryHex, color: theme.primaryHex } : undefined}
+          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${
+            activeReport === 'aniversariantes' ? 'border-current font-bold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
           }`}
         >
           <Cake className="w-4 h-4" />
@@ -98,8 +101,9 @@ export const ReportsView: React.FC = () => {
 
         <button
           onClick={() => setActiveReport('carta_recomendacao')}
-          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 shrink-0 transition-colors ${
-            activeReport === 'carta_recomendacao' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'
+          style={activeReport === 'carta_recomendacao' ? { borderBottomColor: theme.primaryHex, color: theme.primaryHex } : undefined}
+          className={`py-3 px-4 text-xs font-bold border-b-2 flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${
+            activeReport === 'carta_recomendacao' ? 'border-current font-bold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
           }`}
         >
           <Award className="w-4 h-4" />
@@ -109,69 +113,69 @@ export const ReportsView: React.FC = () => {
 
       {/* REPORT 1: DEMOGRAFIA */}
       {activeReport === 'membresia' && (
-        <div className="bg-white rounded-b-2xl p-6 border border-slate-200 shadow-xs space-y-6 printable-report">
-          <div className="text-center border-b border-slate-200 pb-4">
-            <h3 className="font-extrabold text-base text-slate-800 uppercase">{churchProfile.name}</h3>
-            <p className="text-xs text-slate-500">Relatório Demográfico Eclesiástico Geral • Secretaria</p>
-            <p className="text-[11px] text-slate-400 mt-1">
+        <div className="bg-white dark:bg-slate-900 rounded-b-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 printable-report">
+          <div className="text-center border-b border-slate-200 dark:border-slate-800 pb-4">
+            <h3 className="font-extrabold text-base text-slate-800 dark:text-white uppercase">{churchProfile.name}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Relatório Demográfico Eclesiástico Geral • Secretaria</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
               Emitido em {new Date().toLocaleDateString('pt-BR')} • CNPJ: {churchProfile.cnpj}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Situação */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-              <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wider">Situação Eclesiástica</h4>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2">
+              <h4 className="font-bold text-slate-700 dark:text-slate-200 text-xs uppercase tracking-wider">Situação Eclesiástica</h4>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Membros Ativos (Plena Comunhão):</span>
-                  <strong className="text-emerald-700">{activeMembers} ({Math.round((activeMembers / totalMembers) * 100)}%)</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Membros Ativos (Plena Comunhão):</span>
+                  <strong className="text-emerald-700 dark:text-emerald-400">{activeMembers} ({Math.round((activeMembers / totalMembers) * 100)}%)</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Em Observação / Visitantes:</span>
-                  <strong className="text-amber-700">{inObs}</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Em Observação / Visitantes:</span>
+                  <strong className="text-amber-700 dark:text-amber-400">{inObs}</strong>
                 </div>
-                <div className="flex justify-between border-t border-slate-200 pt-1 font-bold">
-                  <span>Total de Registros:</span>
-                  <span>{totalMembers}</span>
+                <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-1 font-bold">
+                  <span className="text-slate-800 dark:text-white">Total de Registros:</span>
+                  <span className="text-slate-800 dark:text-white">{totalMembers}</span>
                 </div>
               </div>
             </div>
 
             {/* Vida Sacramental */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-              <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wider">Vida Sacramental</h4>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2">
+              <h4 className="font-bold text-slate-700 dark:text-slate-200 text-xs uppercase tracking-wider">Vida Sacramental</h4>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Batizados em Águas:</span>
-                  <strong className="text-indigo-700">{baptizedWater} ({Math.round((baptizedWater / totalMembers) * 100)}%)</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Batizados em Águas:</span>
+                  <strong style={{ color: theme.primaryHex }}>{baptizedWater} ({Math.round((baptizedWater / totalMembers) * 100)}%)</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Não Batizados nas Águas:</span>
-                  <strong className="text-slate-700">{totalMembers - baptizedWater}</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Não Batizados nas Águas:</span>
+                  <strong className="text-slate-700 dark:text-slate-300">{totalMembers - baptizedWater}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Batizados no Espírito Santo:</span>
-                  <strong className="text-purple-700">{baptizedSpirit}</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Batizados no Espírito Santo:</span>
+                  <strong className="text-purple-700 dark:text-purple-400">{baptizedSpirit}</strong>
                 </div>
               </div>
             </div>
 
             {/* Estado Civil */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
-              <h4 className="font-bold text-slate-700 text-xs uppercase tracking-wider">Perfil Conjugal</h4>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2">
+              <h4 className="font-bold text-slate-700 dark:text-slate-200 text-xs uppercase tracking-wider">Perfil Conjugal</h4>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Casados:</span>
-                  <strong className="text-slate-800">{marriedCount}</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Casados:</span>
+                  <strong className="text-slate-800 dark:text-white">{marriedCount}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Solteiros:</span>
-                  <strong className="text-slate-800">{singleCount}</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Solteiros:</span>
+                  <strong className="text-slate-800 dark:text-white">{singleCount}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Viúvos / Divorciados:</span>
-                  <strong className="text-slate-800">{otherMarital}</strong>
+                  <span className="text-slate-600 dark:text-slate-400">Viúvos / Divorciados:</span>
+                  <strong className="text-slate-800 dark:text-white">{otherMarital}</strong>
                 </div>
               </div>
             </div>
@@ -179,17 +183,23 @@ export const ReportsView: React.FC = () => {
 
           {/* Department Breakdown */}
           <div className="pt-2">
-            <h4 className="font-bold text-slate-800 text-sm mb-3">Distribuição por Departamento Ministerial</h4>
+            <h4 className="font-bold text-slate-800 dark:text-white text-sm mb-3">Distribuição por Departamento Ministerial</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {departments.map(d => {
                 const count = members.filter(m => m.departmentIds?.includes(d.id)).length;
                 return (
-                  <div key={d.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
+                  <div key={d.id} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                     <div>
-                      <p className="font-semibold text-slate-800">{d.name}</p>
-                      <p className="text-[11px] text-slate-400">{d.meetingSchedule || 'Atuação regular'}</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">{d.name}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">{d.meetingSchedule || 'Atuação regular'}</p>
                     </div>
-                    <span className="font-bold text-indigo-700 px-2 py-0.5 bg-indigo-50 rounded">
+                    <span 
+                      className="font-bold px-2 py-0.5 rounded"
+                      style={{ 
+                        backgroundColor: `${theme.primaryHex}15`, 
+                        color: theme.primaryHex 
+                      }}
+                    >
                       {count} voluntários
                     </span>
                   </div>
@@ -202,16 +212,16 @@ export const ReportsView: React.FC = () => {
 
       {/* REPORT 2: ANIVERSARIANTES */}
       {activeReport === 'aniversariantes' && (
-        <div className="bg-white rounded-b-2xl p-6 border border-slate-200 shadow-xs space-y-6 printable-report">
-          <div className="text-center border-b border-slate-200 pb-4">
-            <h3 className="font-extrabold text-base text-slate-800 uppercase">{churchProfile.name}</h3>
-            <p className="text-xs text-slate-500">Boletim Oficial de Aniversariantes do Mês de Outubro</p>
+        <div className="bg-white dark:bg-slate-900 rounded-b-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 printable-report">
+          <div className="text-center border-b border-slate-200 dark:border-slate-800 pb-4">
+            <h3 className="font-extrabold text-base text-slate-800 dark:text-white uppercase">{churchProfile.name}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Boletim Oficial de Aniversariantes do Mês de Outubro</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+                <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-400 font-bold uppercase text-[11px]">
                   <th className="py-2.5 px-3">Dia</th>
                   <th className="py-2.5 px-3">Nome do Aniversariante</th>
                   <th className="py-2.5 px-3">Cargo / Ministério</th>
@@ -219,24 +229,27 @@ export const ReportsView: React.FC = () => {
                   <th className="py-2.5 px-3">Bairro / Cidade</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {birthdaysThisMonth.map(m => {
                   const day = m.birthDate.split('-')[2];
                   return (
-                    <tr key={m.id} className="hover:bg-slate-50">
-                      <td className="py-2.5 px-3 font-bold text-amber-700 text-sm">
+                    <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td 
+                        className="py-2.5 px-3 font-bold text-sm"
+                        style={{ color: theme.primaryHex }}
+                      >
                         Dia {day}
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-slate-800">
+                      <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-white">
                         {m.name}
                       </td>
-                      <td className="py-2.5 px-3 text-slate-600">
+                      <td className="py-2.5 px-3 text-slate-600 dark:text-slate-300">
                         {m.role}
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-slate-600">
+                      <td className="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">
                         {m.phone}
                       </td>
-                      <td className="py-2.5 px-3 text-slate-500">
+                      <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400">
                         {m.neighborhood ? `${m.neighborhood}, ${m.city}` : m.city}
                       </td>
                     </tr>
@@ -251,13 +264,13 @@ export const ReportsView: React.FC = () => {
       {/* REPORT 3: CARTA DE RECOMENDAÇÃO */}
       {activeReport === 'carta_recomendacao' && (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center gap-4 text-xs">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center gap-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione o Membro:</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Selecione o Membro:</label>
               <select
                 value={selectedMemberForLetter}
                 onChange={e => setSelectedMemberForLetter(e.target.value)}
-                className="px-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50"
+                className="px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white"
               >
                 {members.map(m => (
                   <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
@@ -266,21 +279,21 @@ export const ReportsView: React.FC = () => {
             </div>
 
             <div className="flex-1 min-w-[240px]">
-              <label className="block font-bold text-slate-700 mb-1">Igreja Destinatária:</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">Igreja Destinatária:</label>
               <input
                 type="text"
                 value={destinationChurch}
                 onChange={e => setDestinationChurch(e.target.value)}
                 placeholder="Nome da igreja que receberá o irmão"
-                className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl"
+                className="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
               />
             </div>
           </div>
 
-          {/* Letter Document Preview */}
-          <div className="bg-white rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm max-w-3xl mx-auto printable-letter font-serif space-y-6 text-sm text-slate-800 leading-relaxed">
+          {/* Letter Document Preview (Classic Formal Paper format) */}
+          <div className="bg-white text-slate-900 rounded-2xl p-8 sm:p-12 border border-slate-200 shadow-sm max-w-3xl mx-auto printable-letter font-serif space-y-6 text-sm leading-relaxed">
             <div className="text-center border-b-2 border-slate-300 pb-5 font-sans">
-              <Church className="w-10 h-10 mx-auto text-amber-600 mb-2" />
+              <Church className="w-10 h-10 mx-auto mb-2" style={{ color: theme.primaryHex }} />
               <h3 className="font-extrabold text-lg text-slate-900 tracking-wide uppercase">{churchProfile.name}</h3>
               <p className="text-xs text-slate-500 font-mono">CNPJ: {churchProfile.cnpj} • {churchProfile.address}</p>
               <p className="text-xs text-slate-500">{churchProfile.cityState} • Tel: {churchProfile.phone}</p>

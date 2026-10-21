@@ -5,8 +5,12 @@ import {
   ChurchEvent, 
   VolunteerDuty, 
   FinancialTransaction, 
-  ChurchProfile 
+  ChurchProfile,
+  PlatformTheme,
+  PlatformThemeId,
+  ColorMode
 } from '../types';
+import { getPlatformTheme } from '../data/themeConfig';
 import { 
   initialMembers, 
   initialDepartments, 
@@ -35,9 +39,14 @@ interface ChurchContextType {
   adminRole: AdminRole;
   setAdminRole: (role: AdminRole) => void;
   
-  // Data
+  // Data & Branding
   churchProfile: ChurchProfile;
   updateChurchProfile: (profile: ChurchProfile) => void;
+  theme: PlatformTheme;
+  setThemeId: (themeId: PlatformThemeId, customColors?: { primary?: string; accent?: string }) => void;
+  colorMode: ColorMode;
+  setColorMode: (mode: ColorMode) => void;
+  toggleColorMode: () => void;
   
   members: Member[];
   addMember: (member: Omit<Member, 'id' | 'createdAt'>) => void;
@@ -84,6 +93,7 @@ const STORAGE_KEYS = {
   DUTIES: 'eclesia_duties_v1',
   TRANSACTIONS: 'eclesia_transactions_v1',
   ROLE: 'eclesia_admin_role_v1',
+  COLOR_MODE: 'atos_color_mode_v1',
 };
 
 export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -98,6 +108,13 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try { return JSON.parse(saved); } catch (e) { console.error(e); }
     }
     return initialChurchProfile;
+  });
+
+  const [colorMode, setColorModeState] = useState<ColorMode>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.COLOR_MODE);
+    if (saved === 'dark' || saved === 'light') return saved;
+    if (churchProfile.colorMode) return churchProfile.colorMode;
+    return 'light';
   });
 
   const [members, setMembers] = useState<Member[]>(() => {
@@ -317,6 +334,50 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setTransactions(initialTransactions);
   };
 
+  const theme = getPlatformTheme(churchProfile.themeId, {
+    primary: churchProfile.customPrimaryColor,
+    accent: churchProfile.customAccentColor,
+  });
+
+  // Apply CSS variables dynamically to :root for fluid theme transitions
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--color-primary', theme.primaryHex);
+    root.style.setProperty('--color-primary-hover', theme.primaryHoverHex);
+    root.style.setProperty('--color-accent', theme.accentHex);
+  }, [theme]);
+
+  // Synchronize colorMode class on <html> element
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.COLOR_MODE, colorMode);
+    if (colorMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [colorMode]);
+
+  const setColorMode = (mode: ColorMode) => {
+    setColorModeState(mode);
+    setChurchProfile(prev => ({ ...prev, colorMode: mode }));
+  };
+
+  const toggleColorMode = () => {
+    setColorMode(colorMode === 'dark' ? 'light' : 'dark');
+  };
+
+  const setThemeId = (
+    themeId: PlatformThemeId, 
+    customColors?: { primary?: string; accent?: string }
+  ) => {
+    setChurchProfile(prev => ({
+      ...prev,
+      themeId,
+      customPrimaryColor: customColors?.primary || prev.customPrimaryColor,
+      customAccentColor: customColors?.accent || prev.customAccentColor,
+    }));
+  };
+
   return (
     <ChurchContext.Provider
       value={{
@@ -326,6 +387,11 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setAdminRole,
         churchProfile,
         updateChurchProfile,
+        theme,
+        setThemeId,
+        colorMode,
+        setColorMode,
+        toggleColorMode,
         members,
         addMember,
         updateMember,

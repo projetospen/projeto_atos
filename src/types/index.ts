@@ -177,6 +177,38 @@ export interface ChurchEmblem {
   shape?: 'rounded' | 'circle' | 'shield';
 }
 
+export type ColorMode = 'light' | 'dark';
+
+export type PlatformThemeId = 
+  | 'dourado_real'
+  | 'azul_celestial'
+  | 'rubi_fogo'
+  | 'esmeralda_vida'
+  | 'purpura_nobre'
+  | 'oceano_profundo'
+  | 'onix_moderno'
+  | 'personalizado';
+
+export interface PlatformTheme {
+  id: PlatformThemeId;
+  name: string;
+  tagline: string;
+  primaryHex: string;
+  primaryHoverHex: string;
+  accentHex: string;
+  sidebarActiveBg: string;
+  sidebarAccentText: string;
+  btnPrimary: string;
+  btnSecondary: string;
+  bannerGradient: string;
+  bannerAccentBadge: string;
+  badgeBg: string;
+  textAccent: string;
+  borderAccent: string;
+  ringColor: string;
+  cardHighlight: string;
+}
+
 export interface ChurchProfile {
   name: string;
   subtitle: string;
@@ -191,6 +223,10 @@ export interface ChurchProfile {
   foundingDate: string;
   logoUrl?: string;
   emblem?: ChurchEmblem;
+  themeId?: PlatformThemeId;
+  customPrimaryColor?: string;
+  customAccentColor?: string;
+  colorMode?: ColorMode;
   mottoVerse: string;
   socialInstagram?: string;
   bankPixKey?: string;

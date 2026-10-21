@@ -20,6 +20,7 @@ export const initialChurchProfile: ChurchProfile = {
     textColor: 'text-slate-950',
     shape: 'rounded',
   },
+  themeId: 'dourado_real',
   mottoVerse: "Atos 2:42 - 'E perseveravam na doutrina dos apóstolos, e na comunhão, e no partir do pão, e nas orações.'",
   socialInstagram: "@igrejagracaepaz",
   bankPixKey: "18.394.201/0001-44 (CNPJ)",
