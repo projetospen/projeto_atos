@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChurchEmblem, EmblemIcon, EmblemType } from '../../types';
 import { useChurch } from '../../context/ChurchContext';
 import { ChurchEmblemRenderer } from './ChurchEmblemRenderer';
@@ -15,8 +15,11 @@ import {
   Crown, 
   Shield, 
   Star, 
-  Sun,
-  Check
+  Sun, 
+  Check,
+  Upload,
+  Trash2,
+  Camera
 } from 'lucide-react';
 
 interface EmblemCustomizerModalProps {
@@ -40,6 +43,29 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
       shape: 'rounded',
     };
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDeviceImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione um arquivo de imagem válido (PNG, JPG, SVG ou WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setEmblem({
+        ...emblem,
+        type: 'image',
+        imageUrl: base64,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!isOpen) return null;
 
@@ -247,19 +273,83 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
           {emblem.type === 'image' && (
             <div className="space-y-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  URL da Imagem / Brasão da Igreja
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Imagem / Ícone do seu Dispositivo
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  onChange={handleDeviceImageUpload}
+                  className="hidden"
+                />
+
+                {emblem.imageUrl ? (
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-white shrink-0">
+                        <img 
+                          src={emblem.imageUrl} 
+                          alt="Ícone da Igreja" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-800 truncate">Imagem Carregada</p>
+                        <p className="text-[10px] text-slate-400">Pronta para uso como emblema e ícone da igreja</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 cursor-pointer"
+                      >
+                        Substituir
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEmblem({ ...emblem, imageUrl: '' })}
+                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
+                        title="Remover Imagem"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full p-4 border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-xl bg-slate-50 hover:bg-amber-50/40 transition-colors flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer group"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-white shadow-2xs border border-slate-200 flex items-center justify-center text-slate-500 group-hover:text-amber-600 transition-colors">
+                      <Upload className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-700 group-hover:text-amber-700">
+                        Clique para escolher imagem do seu dispositivo
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        PNG, JPG, SVG ou WebP (Recomendado formato quadrado)
+                      </p>
+                    </div>
+                  </button>
+                )}
+              </div>
+
+              {/* Alternative direct URL input */}
+              <div className="pt-2 border-t border-slate-100">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Ou insira a URL direta da imagem:
                 </label>
                 <input
                   type="url"
-                  value={emblem.imageUrl || ''}
+                  value={emblem.imageUrl?.startsWith('data:') ? '' : (emblem.imageUrl || '')}
                   onChange={e => setEmblem({ ...emblem, imageUrl: e.target.value })}
                   placeholder="https://suaigreja.com/logo.png"
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-hidden"
+                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:outline-hidden text-slate-700"
                 />
-                <span className="text-[11px] text-slate-500 mt-1 block">
-                  Insira o link direto de uma imagem PNG ou JPG quadrada do logotipo da sua igreja.
-                </span>
               </div>
             </div>
           )}

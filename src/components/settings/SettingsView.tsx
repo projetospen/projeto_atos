@@ -21,13 +21,15 @@ import {
   Sun,
   Moon,
   LogOut,
-  UserCheck
+  UserCheck,
+  Camera
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const { 
     churchProfile, 
     updateChurchProfile, 
+    uploadChurchIcon,
     exportBackup, 
     importBackup, 
     resetAllData,
@@ -39,16 +41,56 @@ export const SettingsView: React.FC = () => {
     toggleColorMode,
     currentUser,
     logout,
-    availableAccounts,
-    login
+    updateCurrentUser
   } = useChurch();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const churchIconFileInputRef = useRef<HTMLInputElement>(null);
+  const userAvatarFileInputRef = useRef<HTMLInputElement>(null);
+
   const [profile, setProfile] = useState<ChurchProfile>(churchProfile);
   const [isEmblemModalOpen, setIsEmblemModalOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [importMessage, setImportMessage] = useState<{ text: string; success: boolean } | null>(null);
+
+  // Device Church Icon Upload Handler
+  const handleChurchIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione um arquivo de imagem válido (PNG, JPG, WebP, SVG).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      uploadChurchIcon(dataUrl);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Device Profile Photo Upload Handler
+  const handleUserAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione um arquivo de imagem válido (PNG, JPG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      updateCurrentUser({ avatarUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Keep profile state synced with context
   React.useEffect(() => {
@@ -138,18 +180,37 @@ export const SettingsView: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsEmblemModalOpen(true)}
-                style={{
-                  backgroundColor: theme.primaryHex,
-                  color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0 hover:opacity-90"
-              >
-                <Palette className="w-4 h-4" />
-                <span>Personalizar Emblema</span>
-              </button>
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <input
+                  type="file"
+                  ref={churchIconFileInputRef}
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  onChange={handleChurchIconUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => churchIconFileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all cursor-pointer shadow-xs active:scale-95"
+                  title="Enviar imagem do seu dispositivo para ser o ícone/emblema oficial"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Ícone do Dispositivo</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEmblemModalOpen(true)}
+                  style={{
+                    backgroundColor: theme.primaryHex,
+                    color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0 hover:opacity-90"
+                >
+                  <Palette className="w-4 h-4" />
+                  <span>Personalizar Emblema</span>
+                </button>
+              </div>
             </div>
 
             {/* Platform Theme & Light/Dark Mode Card */}
@@ -428,26 +489,78 @@ export const SettingsView: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80">
-              <div 
-                className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0"
-                style={{ backgroundColor: theme.primaryHex }}
-              >
-                {currentUser?.name.charAt(0) || 'U'}
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 space-y-3">
+              <div className="flex items-center gap-3">
+                <div 
+                  onClick={() => userAvatarFileInputRef.current?.click()}
+                  className="relative group/avatar cursor-pointer shrink-0"
+                  title="Clique para carregar foto do perfil do seu dispositivo"
+                >
+                  {currentUser?.avatarUrl ? (
+                    <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-white dark:border-slate-700 shadow-xs relative">
+                      <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity text-white">
+                        <Camera className="w-4 h-4" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-base text-white shadow-xs relative"
+                      style={{ backgroundColor: theme.primaryHex }}
+                    >
+                      {currentUser?.name.charAt(0) || 'U'}
+                      <div className="absolute inset-0 bg-black/30 rounded-2xl opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity text-white">
+                        <Camera className="w-4 h-4" />
+                      </div>
+                    </div>
+                  )}
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-slate-700 rounded-full border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-2xs">
+                    <Camera className="w-2.5 h-2.5" />
+                  </span>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    {currentUser?.name || churchProfile.seniorPastor}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    {currentUser?.email || 'admin@atos.org'}
+                  </p>
+                  <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
+                    Cargo: {currentUser?.role || 'Pastor Presidente'}
+                  </p>
+                  <span className="inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                    {ROLE_PERMISSIONS[currentUser?.role || 'Pastor Presidente']?.scopeLabel}
+                  </span>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                  {currentUser?.name || churchProfile.seniorPastor}
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  {currentUser?.email || 'admin@atos.org'}
-                </p>
-                <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
-                  Cargo: {currentUser?.role || 'Pastor Presidente'}
-                </p>
-                <span className="inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                  {ROLE_PERMISSIONS[currentUser?.role || 'Pastor Presidente']?.scopeLabel}
-                </span>
+
+              {/* Upload Profile Photo Button */}
+              <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={userAvatarFileInputRef}
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleUserAvatarUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => userAvatarFileInputRef.current?.click()}
+                  className="flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                >
+                  <Upload className="w-3.5 h-3.5 text-slate-500 dark:text-slate-300" />
+                  <span>{currentUser?.avatarUrl ? 'Trocar Foto do Perfil' : 'Carregar Foto do Dispositivo'}</span>
+                </button>
+                {currentUser?.avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => updateCurrentUser({ avatarUrl: undefined })}
+                    className="py-1.5 px-2.5 rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/40 cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                )}
               </div>
             </div>
 

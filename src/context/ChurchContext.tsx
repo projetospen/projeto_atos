@@ -45,10 +45,12 @@ interface ChurchContextType {
   availableAccounts: UserAccount[];
   login: (email: string, password?: string, targetAccount?: UserAccount) => Promise<boolean>;
   logout: () => Promise<void>;
+  updateCurrentUser: (updates: Partial<UserAccount>) => void;
   
   // Data & Branding
   churchProfile: ChurchProfile;
   updateChurchProfile: (profile: ChurchProfile) => void;
+  uploadChurchIcon: (imageUrl: string) => void;
   theme: PlatformTheme;
   setThemeId: (themeId: PlatformThemeId, customColors?: { primary?: string; accent?: string }) => void;
   colorMode: ColorMode;
@@ -373,6 +375,26 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, 'logged_out');
   };
 
+  const updateCurrentUser = (updates: Partial<UserAccount>) => {
+    if (!currentUser) return;
+    const updated = { ...currentUser, ...updates };
+    setCurrentUser(updated);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
+  };
+
+  const uploadChurchIcon = (imageUrl: string) => {
+    setChurchProfile(prev => ({
+      ...prev,
+      logoUrl: imageUrl,
+      emblem: {
+        type: 'image',
+        imageUrl,
+        gradient: prev.emblem?.gradient || 'from-amber-500 to-amber-300',
+        shape: prev.emblem?.shape || 'rounded',
+      }
+    }));
+  };
+
   // Member CRUD
   const addMember = async (data: Omit<Member, 'id' | 'createdAt'>) => {
   const newMember: Member = {
@@ -599,8 +621,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         availableAccounts,
         login,
         logout,
+        updateCurrentUser,
         churchProfile,
         updateChurchProfile,
+        uploadChurchIcon,
         theme,
         setThemeId,
         colorMode,

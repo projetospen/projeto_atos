@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useChurch } from '../../context/ChurchContext';
 import { AdminRole, ROLE_PERMISSIONS } from '../../types';
 import { 
@@ -14,7 +14,9 @@ import {
   Palette,
   Sun,
   Moon,
-  LogOut
+  LogOut,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { ThemeCustomizerModal } from '../common/ThemeCustomizerModal';
 
@@ -35,8 +37,28 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
     toggleColorMode,
     openThemeModal,
     currentUser,
-    logout
+    logout,
+    updateCurrentUser
   } = useChurch();
+
+  const profilePhotoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione um arquivo de imagem válido (PNG, JPG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      updateCurrentUser({ avatarUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showBirthdayMenu, setShowBirthdayMenu] = useState(false);
@@ -264,12 +286,18 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
               className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl border border-slate-200/60 dark:border-slate-700 transition-colors cursor-pointer"
               title="Perfil e Sessão do Usuário"
             >
-              <div 
-                className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] text-white shrink-0"
-                style={{ backgroundColor: theme.primaryHex }}
-              >
-                {currentUser?.name.charAt(0) || 'U'}
-              </div>
+              {currentUser?.avatarUrl ? (
+                <div className="w-5 h-5 rounded-full overflow-hidden shrink-0 border border-slate-300 dark:border-slate-600">
+                  <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div 
+                  className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] text-white shrink-0"
+                  style={{ backgroundColor: theme.primaryHex }}
+                >
+                  {currentUser?.name.charAt(0) || 'U'}
+                </div>
+              )}
               <div className="hidden sm:flex flex-col text-left leading-none">
                 <span className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[100px]">
                   {currentUser?.name.split(' ')[0] || 'Perfil'}
@@ -286,15 +314,38 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
                 onMouseLeave={() => setShowRoleMenu(false)}
                 className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-fade-in space-y-3"
               >
-                {/* Active Individual Profile Card */}
+                {/* Active Individual Profile Card with Photo Upload */}
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80">
                   <div className="flex items-center gap-3">
+                    {/* Clickable Profile Photo */}
                     <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-xs"
-                      style={{ backgroundColor: theme.primaryHex }}
+                      onClick={() => profilePhotoInputRef.current?.click()}
+                      className="relative group/photo cursor-pointer shrink-0" 
+                      title="Clique para adicionar ou trocar foto de perfil"
                     >
-                      {currentUser?.name.charAt(0) || 'U'}
+                      {currentUser?.avatarUrl ? (
+                        <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-white dark:border-slate-700 shadow-xs relative">
+                          <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition-opacity text-white">
+                            <Camera className="w-4 h-4" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-base text-white shadow-xs relative"
+                          style={{ backgroundColor: theme.primaryHex }}
+                        >
+                          {currentUser?.name.charAt(0) || 'U'}
+                          <div className="absolute inset-0 bg-black/30 rounded-2xl opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition-opacity text-white">
+                            <Camera className="w-4 h-4" />
+                          </div>
+                        </div>
+                      )}
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-slate-700 rounded-full border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-2xs">
+                        <Camera className="w-2.5 h-2.5" />
+                      </span>
                     </div>
+
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                         {currentUser?.name || churchProfile.seniorPastor}
@@ -311,6 +362,35 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
                         </span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Device Photo Upload Buttons */}
+                  <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                    <input 
+                      type="file" 
+                      ref={profilePhotoInputRef} 
+                      accept="image/png,image/jpeg,image/webp" 
+                      onChange={handleProfilePhotoUpload} 
+                      className="hidden" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => profilePhotoInputRef.current?.click()}
+                      className="flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                    >
+                      <Upload className="w-3 h-3 text-slate-500 dark:text-slate-300" />
+                      <span>{currentUser?.avatarUrl ? 'Trocar Foto' : 'Adicionar Foto'}</span>
+                    </button>
+                    {currentUser?.avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentUser({ avatarUrl: undefined })}
+                        className="py-1 px-2 rounded-lg text-[10px] font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                        title="Remover foto do perfil"
+                      >
+                        Remover
+                      </button>
+                    )}
                   </div>
                 </div>
 

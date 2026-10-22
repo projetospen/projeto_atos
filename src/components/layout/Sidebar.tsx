@@ -217,12 +217,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Active User Session & Pastoral Footer */}
         <div className="p-3 sm:p-3.5 border-t border-slate-800 dark:border-slate-800/80 bg-slate-950/60">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div 
-              className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs shrink-0"
-              style={{ color: theme.primaryHex }}
-            >
-              {currentUser?.name.charAt(0) || churchProfile.seniorPastor.split(' ')[1]?.charAt(0) || 'P'}
-            </div>
+            {currentUser?.avatarUrl ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 shrink-0">
+                <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div 
+                className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs shrink-0"
+                style={{ color: theme.primaryHex }}
+              >
+                {currentUser?.name.charAt(0) || churchProfile.seniorPastor.split(' ')[1]?.charAt(0) || 'P'}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-slate-200 truncate">
                 {currentUser?.name || churchProfile.seniorPastor}
