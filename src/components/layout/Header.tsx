@@ -112,10 +112,15 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
           </button>
           
           <div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                Graça e Paz, <strong className="font-bold text-slate-800 dark:text-slate-100">{currentUser?.name || churchProfile.seniorPastor}</strong>!
+              </span>
+            </div>
             <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white leading-tight">
               {getTabTitle()}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block">
               {churchProfile.name} • {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>

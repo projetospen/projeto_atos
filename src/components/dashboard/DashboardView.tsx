@@ -41,7 +41,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setActiveTab, 
     setSelectedMemberForCard,
     churchProfile,
-    theme 
+    theme,
+    currentUser
   } = useChurch();
 
   // Metrics
@@ -90,7 +91,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span>Plataforma ATOS • Gestão Eclesiástica</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Graça e Paz, Administração!
+            Graça e Paz, {currentUser?.name || 'Membro'}!
           </h1>
           <p className="mt-2 text-sm text-slate-300 leading-relaxed">
             Gestão integrada da <span className="font-semibold text-white">{churchProfile.name}</span> no sistema <strong style={{ color: theme.accentHex }}>ATOS</strong>. Acompanhe a membresia, departamentos, escalas de culto e o fluxo da tesouraria.
