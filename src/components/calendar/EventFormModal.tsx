@@ -16,7 +16,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   onClose,
   defaultDate,
 }) => {
-  const { addEvent, updateEvent, departments } = useChurch();
+  const { addEvent, updateEvent, departments, theme } = useChurch();
 
   const [formData, setFormData] = useState({
     title: event?.title || '',
@@ -87,7 +87,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
               placeholder="Ex: Culto de Celebração & Santa Ceia"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -97,7 +97,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               <select
                 value={formData.category}
                 onChange={e => setFormData({ ...formData, category: e.target.value as EventCategory })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 <option value="culto_geral">Culto Geral / Celebração</option>
                 <option value="santa_ceia">Santa Ceia do Senhor</option>
@@ -117,7 +117,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               <select
                 value={formData.departmentId}
                 onChange={e => setFormData({ ...formData, departmentId: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 <option value="">Geral da Igreja</option>
                 {departments.map(d => (
@@ -135,7 +135,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 required
                 value={formData.startDate}
                 onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
 
@@ -146,7 +146,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 required
                 value={formData.startTime}
                 onChange={e => setFormData({ ...formData, startTime: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 type="time"
                 value={formData.endTime}
                 onChange={e => setFormData({ ...formData, endTime: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
 
@@ -169,7 +169,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 value={formData.location}
                 onChange={e => setFormData({ ...formData, location: e.target.value })}
                 placeholder="Templo Principal / Salão Social"
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
           </div>
@@ -182,7 +182,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 value={formData.speakerOrPreacher}
                 onChange={e => setFormData({ ...formData, speakerOrPreacher: e.target.value })}
                 placeholder="Pr. Marcos Vinícius / Convidado"
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
 
@@ -193,7 +193,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 value={formData.targetAudience}
                 onChange={e => setFormData({ ...formData, targetAudience: e.target.value })}
                 placeholder="Toda a Igreja, Jovens, Casais..."
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
           </div>
@@ -205,7 +205,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
               placeholder="Detalhes adicionais, passagens bíblicas tema, ou orientações..."
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -215,7 +215,8 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               id="isRecurring"
               checked={formData.isRecurring}
               onChange={e => setFormData({ ...formData, isRecurring: e.target.checked })}
-              className="w-4 h-4 text-indigo-600 rounded"
+              style={{ accentColor: theme.primaryHex }}
+              className="w-4 h-4 rounded cursor-pointer"
             />
             <label htmlFor="isRecurring" className="text-slate-700 font-medium cursor-pointer">
               Evento semanal recorrente (repete toda semana no mesmo dia)
@@ -232,7 +233,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md cursor-pointer"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+              className="flex items-center gap-1.5 px-5 py-2.5 font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
             >
               <Save className="w-4 h-4" />
               <span>{event ? 'Salvar Evento' : 'Agendar Evento'}</span>

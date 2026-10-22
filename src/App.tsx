@@ -18,6 +18,7 @@ import { SettingsView } from './components/settings/SettingsView';
 import { MemberCardModal } from './components/common/MemberCardModal';
 import { MemberFormModal } from './components/members/MemberFormModal';
 import { EventFormModal } from './components/calendar/EventFormModal';
+import { ThemeCustomizerModal } from './components/common/ThemeCustomizerModal';
 
 const AppContent: React.FC = () => {
   const { 
@@ -100,6 +101,8 @@ const AppContent: React.FC = () => {
         isOpen={isQuickEventModalOpen}
         onClose={() => setIsQuickEventModalOpen(false)}
       />
+
+      <ThemeCustomizerModal />
     </div>
   );
 };

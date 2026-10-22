@@ -12,8 +12,7 @@ import {
   FileText, 
   Settings, 
   Sparkles,
-  ChevronRight,
-  Palette
+  ChevronRight
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,7 +21,15 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activeTab, setActiveTab, churchProfile, members, events, departments, theme } = useChurch();
+  const { 
+    activeTab, 
+    setActiveTab, 
+    churchProfile, 
+    members, 
+    events, 
+    departments, 
+    theme
+  } = useChurch();
   const [isEmblemModalOpen, setIsEmblemModalOpen] = useState(false);
 
   const menuItems: { id: NavTab; label: string; icon: React.ElementType; badge?: string | number; badgeColor?: string }[] = [
@@ -32,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       label: 'Membros & Secretaria', 
       icon: Users, 
       badge: members.length,
-      badgeColor: 'bg-indigo-100 text-indigo-700 font-semibold'
+      badgeColor: 'bg-slate-800 text-slate-300 font-semibold border border-slate-700/60'
     },
     { 
       id: 'departamentos', 
@@ -79,8 +86,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             {/* Clickable Emblem with Edit Trigger */}
             <div 
               onClick={() => setIsEmblemModalOpen(true)}
-              className="relative group cursor-pointer"
-              title="Clique para personalizar o emblema da igreja"
+              className="relative group cursor-pointer shrink-0"
+              title="Clique para personalizar o emblema ou avatar da igreja"
             >
               <ChurchEmblemRenderer 
                 emblem={churchProfile.emblem} 
@@ -88,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 size="md"
               />
               <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-amber-300">
-                <Palette className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" />
               </div>
             </div>
 
@@ -175,9 +182,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Pastoral Leadership Footer */}
         <div className="p-3 sm:p-3.5 border-t border-slate-800 dark:border-slate-800/80 bg-slate-950/40">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div 
-              className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs"
+              className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs shrink-0"
               style={{ color: theme.primaryHex }}
             >
               {churchProfile.seniorPastor.split(' ')[1]?.charAt(0) || 'P'}

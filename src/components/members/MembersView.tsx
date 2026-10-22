@@ -337,7 +337,7 @@ export const MembersView: React.FC = () => {
                             )}
                           </div>
                           <div>
-                            <p className="font-bold text-slate-800 dark:text-white text-xs hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                            <p className="font-bold text-slate-800 dark:text-white text-xs hover:opacity-80 transition-opacity">
                               {m.name}
                             </p>
                             <p className="text-[11px] text-slate-400 dark:text-slate-500">

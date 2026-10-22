@@ -28,7 +28,7 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { churchProfile, updateChurchProfile } = useChurch();
+  const { churchProfile, updateChurchProfile, theme } = useChurch();
 
   const [emblem, setEmblem] = useState<ChurchEmblem>(() => {
     return churchProfile.emblem || {
@@ -139,9 +139,13 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
               <button
                 type="button"
                 onClick={() => setEmblem({ ...emblem, type: 'icon' })}
+                style={emblem.type === 'icon' ? {
+                  borderColor: theme.primaryHex,
+                  backgroundColor: `${theme.primaryHex}15`
+                } : undefined}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   emblem.type === 'icon' 
-                    ? 'bg-indigo-50 border-indigo-600 text-indigo-700 shadow-2xs font-bold' 
+                    ? 'shadow-2xs font-bold text-slate-900' 
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -152,9 +156,13 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
               <button
                 type="button"
                 onClick={() => setEmblem({ ...emblem, type: 'monogram' })}
+                style={emblem.type === 'monogram' ? {
+                  borderColor: theme.primaryHex,
+                  backgroundColor: `${theme.primaryHex}15`
+                } : undefined}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   emblem.type === 'monogram' 
-                    ? 'bg-indigo-50 border-indigo-600 text-indigo-700 shadow-2xs font-bold' 
+                    ? 'shadow-2xs font-bold text-slate-900' 
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -165,9 +173,13 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
               <button
                 type="button"
                 onClick={() => setEmblem({ ...emblem, type: 'image' })}
+                style={emblem.type === 'image' ? {
+                  borderColor: theme.primaryHex,
+                  backgroundColor: `${theme.primaryHex}15`
+                } : undefined}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   emblem.type === 'image' 
-                    ? 'bg-indigo-50 border-indigo-600 text-indigo-700 shadow-2xs font-bold' 
+                    ? 'shadow-2xs font-bold text-slate-900' 
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -190,9 +202,13 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
                       key={opt.id}
                       type="button"
                       onClick={() => setEmblem({ ...emblem, iconName: opt.id })}
+                      style={isSelected ? {
+                        borderColor: theme.primaryHex,
+                        backgroundColor: `${theme.primaryHex}15`
+                      } : undefined}
                       className={`p-2.5 rounded-xl border flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer ${
                         isSelected 
-                          ? 'border-amber-500 bg-amber-50 text-slate-900 font-bold ring-2 ring-amber-400/30' 
+                          ? 'font-bold ring-2 shadow-2xs' 
                           : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                       }`}
                     >
@@ -219,7 +235,7 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
                   value={emblem.monogramText || ''}
                   onChange={e => setEmblem({ ...emblem, monogramText: e.target.value.toUpperCase() })}
                   placeholder="Ex: GP, IB, A, P"
-                  className="w-full px-3 py-2 text-base font-black tracking-widest uppercase border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-base font-black tracking-widest uppercase border border-slate-200 rounded-xl focus:outline-hidden"
                 />
                 <span className="text-[11px] text-slate-500 mt-1 block">
                   Recomendado: as iniciais do nome da sua congregação (ex: "GP" para Graça & Paz).
@@ -239,7 +255,7 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
                   value={emblem.imageUrl || ''}
                   onChange={e => setEmblem({ ...emblem, imageUrl: e.target.value })}
                   placeholder="https://suaigreja.com/logo.png"
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-hidden"
                 />
                 <span className="text-[11px] text-slate-500 mt-1 block">
                   Insira o link direto de uma imagem PNG ou JPG quadrada do logotipo da sua igreja.
@@ -259,8 +275,11 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
                     key={g.id}
                     type="button"
                     onClick={() => setEmblem({ ...emblem, gradient: g.class, textColor: g.text })}
+                    style={isSelected ? {
+                      borderColor: theme.primaryHex,
+                    } : undefined}
                     className={`p-2 rounded-xl border flex items-center gap-2 transition-all cursor-pointer ${
-                      isSelected ? 'border-indigo-600 ring-2 ring-indigo-400/30 font-bold' : 'border-slate-200 hover:bg-slate-50'
+                      isSelected ? 'font-bold ring-2 shadow-xs' : 'border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded-full bg-gradient-to-tr ${g.class} shrink-0 shadow-xs flex items-center justify-center`}>
@@ -284,9 +303,13 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
                     key={s.id}
                     type="button"
                     onClick={() => setEmblem({ ...emblem, shape: s.id })}
+                    style={isSelected ? {
+                      borderColor: theme.primaryHex,
+                      backgroundColor: `${theme.primaryHex}15`
+                    } : undefined}
                     className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
                       isSelected 
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-bold' 
+                        ? 'font-bold text-slate-900' 
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -310,7 +333,11 @@ export const EmblemCustomizerModal: React.FC<EmblemCustomizerModalProps> = ({
           <button
             type="button"
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
+            style={{
+              backgroundColor: theme.primaryHex,
+              color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+            }}
+            className="flex items-center gap-1.5 px-5 py-2.5 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
           >
             <Save className="w-4 h-4" />
             <span>Salvar Emblema</span>

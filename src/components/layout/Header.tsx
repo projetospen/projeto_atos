@@ -31,7 +31,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
     setSelectedMemberForCard,
     theme,
     colorMode,
-    toggleColorMode 
+    toggleColorMode,
+    openThemeModal 
   } = useChurch();
 
   const [showRoleMenu, setShowRoleMenu] = useState(false);
@@ -178,22 +179,18 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, onOpenQuickMemb
             {colorMode === 'dark' ? (
               <Sun className="w-5 h-5 text-amber-400 transition-transform hover:rotate-45" />
             ) : (
-              <Moon className="w-5 h-5 text-slate-600 hover:text-indigo-600 transition-transform hover:-rotate-12" />
+              <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300 hover:text-amber-500 transition-transform hover:-rotate-12" />
             )}
           </button>
 
-          {/* Quick Theme Color Customizer Modal Trigger */}
+          {/* Quick Theme Color Customizer Modal Trigger (Icon Only) */}
           <button
-            onClick={() => setIsThemeModalOpen(true)}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer relative group"
-            title="Personalizar Cores e Tema da Plataforma"
-            aria-label="Personalizar cores da plataforma"
+            onClick={openThemeModal}
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer group"
+            title="Personalizar Paleta de Cores da Igreja"
+            aria-label="Personalizar paleta de cores"
           >
-            <Palette className="w-5 h-5 transition-transform group-hover:scale-110" style={{ color: theme.primaryHex }} />
-            <span 
-              className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-white dark:ring-slate-900" 
-              style={{ backgroundColor: theme.primaryHex }}
-            />
+            <Palette className="w-5 h-5 transition-transform group-hover:rotate-12" style={{ color: theme.primaryHex }} />
           </button>
 
           {/* Birthday Notification */}

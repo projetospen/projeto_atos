@@ -113,7 +113,7 @@ export const SettingsView: React.FC = () => {
 
           <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
             {/* Emblem Customization Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800 shadow-sm">
+            <div className={`p-4 rounded-2xl bg-gradient-to-r ${theme.bannerGradient} text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800 shadow-sm`}>
               <div className="flex items-center gap-3.5">
                 <ChurchEmblemRenderer
                   emblem={churchProfile.emblem}
@@ -135,7 +135,11 @@ export const SettingsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsEmblemModalOpen(true)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+                style={{
+                  backgroundColor: theme.primaryHex,
+                  color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0 hover:opacity-90"
               >
                 <Palette className="w-4 h-4" />
                 <span>Personalizar Emblema</span>
@@ -201,7 +205,7 @@ export const SettingsView: React.FC = () => {
                   required
                   value={profile.name}
                   onChange={e => setProfile({ ...profile, name: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -212,7 +216,7 @@ export const SettingsView: React.FC = () => {
                   value={profile.subtitle}
                   onChange={e => setProfile({ ...profile, subtitle: e.target.value })}
                   placeholder="Ex: Sede Central / Templo Sede"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
             </div>
@@ -225,7 +229,7 @@ export const SettingsView: React.FC = () => {
                   required
                   value={profile.seniorPastor}
                   onChange={e => setProfile({ ...profile, seniorPastor: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -235,7 +239,7 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={profile.secretaryName}
                   onChange={e => setProfile({ ...profile, secretaryName: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -245,7 +249,7 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={profile.treasurerName}
                   onChange={e => setProfile({ ...profile, treasurerName: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
             </div>
@@ -257,7 +261,7 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={profile.cnpj}
                   onChange={e => setProfile({ ...profile, cnpj: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -267,7 +271,7 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={profile.phone}
                   onChange={e => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -277,7 +281,7 @@ export const SettingsView: React.FC = () => {
                   type="email"
                   value={profile.email}
                   onChange={e => setProfile({ ...profile, email: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
             </div>
@@ -289,7 +293,7 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={profile.address}
                   onChange={e => setProfile({ ...profile, address: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -299,7 +303,7 @@ export const SettingsView: React.FC = () => {
                   type="text"
                   value={profile.cityState}
                   onChange={e => setProfile({ ...profile, cityState: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
             </div>
@@ -312,7 +316,7 @@ export const SettingsView: React.FC = () => {
                   value={profile.bankPixKey || ''}
                   onChange={e => setProfile({ ...profile, bankPixKey: e.target.value })}
                   placeholder="CNPJ, E-mail, Celular ou Chave Aleatória"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
 
@@ -323,7 +327,7 @@ export const SettingsView: React.FC = () => {
                   value={profile.socialInstagram || ''}
                   onChange={e => setProfile({ ...profile, socialInstagram: e.target.value })}
                   placeholder="@suaigreja"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
                 />
               </div>
             </div>
@@ -335,7 +339,7 @@ export const SettingsView: React.FC = () => {
                 value={profile.mottoVerse}
                 onChange={e => setProfile({ ...profile, mottoVerse: e.target.value })}
                 placeholder="Ex: Atos 2:42 - 'E perseveravam na doutrina...'"
-                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:border-indigo-500 focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden bg-white dark:bg-slate-800 text-slate-800 dark:text-white"
               />
             </div>
 

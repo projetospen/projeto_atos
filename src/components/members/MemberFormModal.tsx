@@ -228,7 +228,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Ex: João da Silva Santos"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
 
@@ -240,7 +240,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     type="date"
                     value={formData.birthDate}
                     onChange={e => setFormData({ ...formData, birthDate: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <select
                     value={formData.gender}
                     onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   >
                     <option value="masculino">Masculino</option>
                     <option value="feminino">Feminino</option>
@@ -263,7 +263,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <select
                     value={formData.maritalStatus}
                     onChange={e => setFormData({ ...formData, maritalStatus: e.target.value as MaritalStatus })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   >
                     <option value="solteiro">Solteiro(a)</option>
                     <option value="casado">Casado(a)</option>
@@ -280,7 +280,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     min="0"
                     value={formData.childrenCount}
                     onChange={e => setFormData({ ...formData, childrenCount: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -293,7 +293,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.spouseName}
                     onChange={e => setFormData({ ...formData, spouseName: e.target.value })}
                     placeholder="Nome do esposo(a)"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               )}
@@ -306,7 +306,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.cpf}
                     onChange={e => setFormData({ ...formData, cpf: e.target.value })}
                     placeholder="000.000.000-00"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -316,7 +316,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.rg}
                     onChange={e => setFormData({ ...formData, rg: e.target.value })}
                     placeholder="00.000.000-0"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -330,7 +330,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={formData.photoUrl}
                   onChange={e => setFormData({ ...formData, photoUrl: e.target.value })}
                   placeholder="https://..."
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                 />
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-[11px] text-slate-400">Sugestões rápidas de fotos:</span>
@@ -365,7 +365,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="(11) 99999-9999"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -375,7 +375,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                     placeholder="membro@email.com"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -387,7 +387,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={formData.address}
                   onChange={e => setFormData({ ...formData, address: e.target.value })}
                   placeholder="Rua, Número, Complemento"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                 />
               </div>
 
@@ -399,7 +399,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.neighborhood}
                     onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
                     placeholder="Bairro"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -409,7 +409,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.city}
                     onChange={e => setFormData({ ...formData, city: e.target.value })}
                     placeholder="Cidade"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -419,7 +419,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.state}
                     onChange={e => setFormData({ ...formData, state: e.target.value })}
                     placeholder="SP"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -431,7 +431,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={formData.zipCode}
                   onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
                   placeholder="00000-000"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                 />
               </div>
             </div>
@@ -446,7 +446,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value as MinistryRole })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   >
                     <option value="Membro">Membro Comungante</option>
                     <option value="Congregado / Visitante">Congregado / Visitante</option>
@@ -472,7 +472,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <select
                     value={formData.status}
                     onChange={e => setFormData({ ...formData, status: e.target.value as MemberStatus })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   >
                     <option value="ativo">Ativo (Em plena comunhão)</option>
                     <option value="em_observacao">Em Observação / Visitante Frequente</option>
@@ -490,7 +490,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     type="date"
                     value={formData.membershipDate}
                     onChange={e => setFormData({ ...formData, membershipDate: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -500,7 +500,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     value={formData.previousChurch}
                     onChange={e => setFormData({ ...formData, previousChurch: e.target.value })}
                     placeholder="Ex: Igreja Batista Memorial"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -516,7 +516,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     type="checkbox"
                     checked={formData.isBaptizedWater}
                     onChange={e => setFormData({ ...formData, isBaptizedWater: e.target.checked })}
-                    className="w-5 h-5 text-indigo-600 rounded"
+                    style={{ accentColor: theme.primaryHex }}
+                    className="w-5 h-5 rounded cursor-pointer"
                   />
                 </div>
 
@@ -541,7 +542,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     type="checkbox"
                     checked={formData.isBaptizedHolySpirit}
                     onChange={e => setFormData({ ...formData, isBaptizedHolySpirit: e.target.checked })}
-                    className="w-5 h-5 text-indigo-600 rounded"
+                    style={{ accentColor: theme.primaryHex }}
+                    className="w-5 h-5 rounded cursor-pointer"
                   />
                 </div>
               </div>
@@ -558,9 +560,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       <div
                         key={dept.id}
                         onClick={() => handleDepartmentToggle(dept.id)}
+                        style={isSelected ? {
+                          borderColor: theme.primaryHex,
+                          backgroundColor: `${theme.primaryHex}15`,
+                        } : undefined}
                         className={`p-2.5 rounded-xl border text-xs cursor-pointer flex items-center justify-between transition-colors ${
                           isSelected 
-                            ? 'bg-indigo-50 border-indigo-300 text-indigo-900 font-semibold' 
+                            ? 'font-bold text-slate-900 dark:text-white' 
                             : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                         }`}
                       >
@@ -569,7 +575,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                           type="checkbox"
                           checked={isSelected}
                           readOnly
-                          className="rounded text-indigo-600 pointer-events-none"
+                          style={{ accentColor: theme.primaryHex }}
+                          className="rounded pointer-events-none"
                         />
                       </div>
                     );
@@ -629,7 +636,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={formData.notes}
                   onChange={e => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Informações relevantes sobre consagrações, discipulado, dons espirituais ou notas de aconselhamento confidencial..."
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
                 />
               </div>
             </div>

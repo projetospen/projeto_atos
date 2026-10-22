@@ -14,14 +14,14 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addDepartment, updateDepartment, members } = useChurch();
+  const { addDepartment, updateDepartment, members, theme } = useChurch();
 
   const [formData, setFormData] = useState({
     name: department?.name || '',
     slug: department?.slug || '',
     description: department?.description || '',
     iconName: department?.iconName || 'Church',
-    color: department?.color || 'from-indigo-600 to-purple-700',
+    color: department?.color || 'from-amber-500 to-orange-600',
     leaderMemberId: department?.leaderMemberId || (members[0]?.id || ''),
     viceLeaderMemberId: department?.viceLeaderMemberId || '',
     meetingSchedule: department?.meetingSchedule || '',
@@ -98,7 +98,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
               placeholder="Ex: Ministério de Louvor & Adoração"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -109,7 +109,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
               placeholder="Descreva o propósito e escopo de atuação do departamento..."
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -120,7 +120,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
                 required
                 value={formData.leaderMemberId}
                 onChange={e => setFormData({ ...formData, leaderMemberId: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 <option value="">Selecione um líder membro...</option>
                 {members.map(m => (
@@ -134,7 +134,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
               <select
                 value={formData.viceLeaderMemberId}
                 onChange={e => setFormData({ ...formData, viceLeaderMemberId: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 <option value="">Nenhum</option>
                 {members.map(m => (
@@ -152,7 +152,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
                 value={formData.meetingSchedule}
                 onChange={e => setFormData({ ...formData, meetingSchedule: e.target.value })}
                 placeholder="Ex: Sábados às 16h00"
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
 
@@ -163,7 +163,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
                 value={formData.meetingLocation}
                 onChange={e => setFormData({ ...formData, meetingLocation: e.target.value })}
                 placeholder="Ex: Templo Principal / Sala Kids"
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
           </div>
@@ -176,7 +176,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
                 min="0"
                 value={formData.monthlyBudget}
                 onChange={e => setFormData({ ...formData, monthlyBudget: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
 
@@ -185,7 +185,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
               <select
                 value={formData.color}
                 onChange={e => setFormData({ ...formData, color: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 {colorOptions.map(c => (
                   <option key={c.class} value={c.class}>{c.label}</option>
@@ -203,7 +203,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
               value={formData.goalsText}
               onChange={e => setFormData({ ...formData, goalsText: e.target.value })}
               placeholder="Ex: Realizar workshop de formação&#10;Adquirir novos instrumentos&#10;Ampliar a equipe em 5 voluntários"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -217,7 +217,11 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md cursor-pointer"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+              className="flex items-center gap-1.5 px-5 py-2.5 font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
             >
               <Save className="w-4 h-4" />
               <span>{department ? 'Salvar Departamento' : 'Criar Departamento'}</span>

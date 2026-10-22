@@ -14,7 +14,7 @@ export const DutyFormModal: React.FC<DutyFormModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addDuty, updateDuty, departments, members } = useChurch();
+  const { addDuty, updateDuty, departments, members, theme } = useChurch();
 
   const [serviceTitle, setServiceTitle] = useState(duty?.serviceTitle || 'Culto de Celebração de Domingo (Noite)');
   const [date, setDate] = useState(duty?.date || '2026-10-25');
@@ -126,7 +126,8 @@ export const DutyFormModal: React.FC<DutyFormModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddRoleRow}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 cursor-pointer"
+                style={{ color: theme.primaryHex }}
+                className="text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-80"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Adicionar Função</span>
@@ -185,7 +186,7 @@ export const DutyFormModal: React.FC<DutyFormModalProps> = ({
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Ex: Chegar com 30 min de antecedência para oração e passagem de som"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -199,7 +200,11 @@ export const DutyFormModal: React.FC<DutyFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md cursor-pointer"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+              className="flex items-center gap-1.5 px-5 py-2.5 font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
             >
               <Save className="w-4 h-4" />
               <span>{duty ? 'Salvar Escala' : 'Criar Escala'}</span>

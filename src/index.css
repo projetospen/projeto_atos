@@ -2,11 +2,28 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --color-primary: #f59e0b;
+  --color-primary-hover: #d97706;
+  --color-accent: #fbbf24;
+}
+
 @layer base {
   body {
-    @apply bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-amber-400 selection:text-slate-950;
+    @apply bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: #020617;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent) !important;
   }
 }
 

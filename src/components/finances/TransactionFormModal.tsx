@@ -12,7 +12,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addTransaction, members, adminRole } = useChurch();
+  const { addTransaction, members, adminRole, theme } = useChurch();
 
   const [type, setType] = useState<TransactionType>('entrada');
   const [category, setCategory] = useState<TransactionCategory>('dizimo');
@@ -94,7 +94,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as TransactionCategory)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 {type === 'entrada' ? (
                   <>
@@ -132,7 +132,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
                 placeholder="0,00"
-                className="w-full px-3 py-2 text-sm font-bold text-slate-800 border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm font-bold text-slate-800 border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
               <select
                 value={memberId}
                 onChange={e => setMemberId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden text-slate-700"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden text-slate-700"
               >
                 <option value="">Anônimo / Congregacional</option>
                 {members.map(m => (
@@ -159,7 +159,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
               <select
                 value={paymentMethod}
                 onChange={e => setPaymentMethod(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               >
                 <option value="pix">PIX</option>
                 <option value="dinheiro">Dinheiro Espécie</option>
@@ -176,7 +176,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 required
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Ex: Dízimo mês de outubro ou Reparo do refletor do púlpito"
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
             />
           </div>
 
@@ -202,7 +202,11 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md cursor-pointer"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+              className="flex items-center gap-1.5 px-5 py-2.5 font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Lançamento</span>

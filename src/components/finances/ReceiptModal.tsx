@@ -1,5 +1,6 @@
 import React from 'react';
 import { FinancialTransaction, ChurchProfile, Member } from '../../types';
+import { useChurch } from '../../context/ChurchContext';
 import { X, Printer, ShieldCheck, Church } from 'lucide-react';
 
 interface ReceiptModalProps {
@@ -15,6 +16,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   member,
   onClose,
 }) => {
+  const { theme } = useChurch();
   if (!transaction) return null;
 
   const handlePrint = () => {
@@ -96,7 +98,11 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           </button>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+            style={{
+              backgroundColor: theme.primaryHex,
+              color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer hover:opacity-90"
           >
             <Printer className="w-4 h-4" />
             <span>Imprimir Recibo</span>

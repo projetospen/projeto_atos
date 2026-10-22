@@ -98,8 +98,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="mt-5 flex flex-wrap gap-2.5">
             <button
               onClick={onOpenNewMemberModal}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
-              style={{ backgroundColor: theme.primaryHex }}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
             >
               <UserPlus className="w-4 h-4" />
               <span>Novo Cadastro de Membro</span>

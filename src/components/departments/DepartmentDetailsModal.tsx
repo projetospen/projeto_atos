@@ -27,7 +27,7 @@ export const DepartmentDetailsModal: React.FC<DepartmentDetailsModalProps> = ({
   onClose,
   onEdit,
 }) => {
-  const { members, deleteDepartment, setSelectedMemberForCard } = useChurch();
+  const { members, deleteDepartment, setSelectedMemberForCard, theme } = useChurch();
 
   if (!department) return null;
 
@@ -155,7 +155,7 @@ export const DepartmentDetailsModal: React.FC<DepartmentDetailsModalProps> = ({
                     </div>
                     <div>
                       <p className="font-bold text-slate-800">{viceLeader.name}</p>
-                      <span className="text-[10px] text-indigo-700 font-semibold block">Vice-Líder / Auxiliar</span>
+                      <span className="text-[10px] font-semibold block" style={{ color: theme.primaryHex }}>Vice-Líder / Auxiliar</span>
                       <span className="text-[10px] text-slate-500">{viceLeader.phone}</span>
                     </div>
                   </div>
@@ -178,7 +178,7 @@ export const DepartmentDetailsModal: React.FC<DepartmentDetailsModalProps> = ({
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {department.meetingSchedule && (
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <Calendar className="w-4 h-4 shrink-0" style={{ color: theme.primaryHex }} />
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-semibold block">Encontros & Ensaios</span>
                     <span className="font-semibold text-slate-800">{department.meetingSchedule}</span>
@@ -187,7 +187,7 @@ export const DepartmentDetailsModal: React.FC<DepartmentDetailsModalProps> = ({
               )}
               {department.meetingLocation && (
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <MapPin className="w-4 h-4 shrink-0" style={{ color: theme.primaryHex }} />
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-semibold block">Local de Reunião</span>
                     <span className="font-semibold text-slate-800">{department.meetingLocation}</span>
@@ -220,7 +220,7 @@ export const DepartmentDetailsModal: React.FC<DepartmentDetailsModalProps> = ({
           {/* Lista de Membros do Departamento */}
           <div>
             <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-indigo-600" />
+              <Users className="w-4 h-4" style={{ color: theme.primaryHex }} />
               <span>Equipe de Voluntários ({deptMembers.length})</span>
             </h4>
             {deptMembers.length === 0 ? (
@@ -244,7 +244,7 @@ export const DepartmentDetailsModal: React.FC<DepartmentDetailsModalProps> = ({
                     <button
                       onClick={() => setSelectedMemberForCard(m)}
                       title="Ver Carteirinha"
-                      className="p-1 text-slate-400 hover:text-indigo-600"
+                      className="p-1 text-slate-400 hover:text-slate-800 transition-colors"
                     >
                       <CreditCard className="w-3.5 h-3.5" />
                     </button>

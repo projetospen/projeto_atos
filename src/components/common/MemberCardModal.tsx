@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Member, ChurchProfile } from '../../types';
+import { useChurch } from '../../context/ChurchContext';
 import { ChurchEmblemRenderer } from './ChurchEmblemRenderer';
 import { X, Printer, Download, QrCode, CheckCircle2, ShieldCheck, Church, Sparkles } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({
   churchProfile,
   onClose,
 }) => {
+  const { theme } = useChurch();
   const cardRef = useRef<HTMLDivElement>(null);
 
   if (!member) return null;
@@ -60,7 +62,7 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({
         <div className="p-6 md:p-8 bg-slate-100 flex flex-col items-center justify-center">
           <div 
             ref={cardRef}
-            className="printable-card w-full max-w-[480px] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-amber-500/30 relative overflow-hidden"
+            className={`printable-card w-full max-w-[480px] bg-gradient-to-br ${theme.bannerGradient} text-white rounded-2xl p-6 shadow-xl border border-amber-500/30 relative overflow-hidden`}
           >
             {/* Background Seal / Watermark */}
             <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
@@ -101,7 +103,10 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({
                       className="w-full h-full object-cover" 
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-900/50 text-amber-200">
+                    <div 
+                      className="w-full h-full flex flex-col items-center justify-center"
+                      style={{ backgroundColor: `${theme.primaryHex}30`, color: theme.primaryHex }}
+                    >
                       <span className="text-2xl font-bold">{member.name.charAt(0)}</span>
                       <span className="text-[9px] text-slate-400 mt-1">SEM FOTO</span>
                     </div>
@@ -191,7 +196,11 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({
             </button>
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors cursor-pointer"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Carteirinha</span>

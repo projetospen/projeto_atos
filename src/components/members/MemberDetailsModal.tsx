@@ -29,7 +29,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   onClose,
   onEdit,
 }) => {
-  const { deleteMember, departments, setSelectedMemberForCard, churchProfile } = useChurch();
+  const { deleteMember, departments, setSelectedMemberForCard, churchProfile, theme } = useChurch();
 
   if (!member) return null;
 
@@ -57,7 +57,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden my-6">
         {/* Header Profile Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 relative">
+        <div className={`bg-gradient-to-r ${theme.bannerGradient} text-white p-6 relative`}>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -70,7 +70,13 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               {member.photoUrl ? (
                 <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-indigo-900 font-bold text-2xl text-amber-300">
+                <div 
+                  className="w-full h-full flex items-center justify-center font-bold text-2xl"
+                  style={{
+                    backgroundColor: theme.primaryHex,
+                    color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+                  }}
+                >
                   {member.name.charAt(0)}
                 </div>
               )}
@@ -81,7 +87,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-slate-950">
                   {member.role}
                 </span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                   member.status === 'ativo' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300'
                 }`}>
                   {member.status.toUpperCase()}
@@ -103,7 +109,11 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSelectedMemberForCard(member)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer hover:opacity-90"
             >
               <CreditCard className="w-3.5 h-3.5" />
               <span>Ver Carteirinha</span>
@@ -145,7 +155,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           {/* Dados Eclesiásticos */}
           <div>
             <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <Church className="w-4 h-4 text-indigo-600" />
+              <Church className="w-4 h-4" style={{ color: theme.primaryHex }} />
               <span>Vida Eclesiástica & Ministérios</span>
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
@@ -177,7 +187,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               <div className="flex flex-wrap gap-1.5">
                 {memberDepartments.length > 0 ? (
                   memberDepartments.map(d => (
-                    <span key={d.id} className="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-800 text-[11px] font-medium">
+                    <span key={d.id} className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-medium">
                       {d.name}
                     </span>
                   ))
@@ -191,7 +201,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           {/* Dados Pessoais & Contato */}
           <div>
             <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <Phone className="w-4 h-4 text-indigo-600" />
+              <Phone className="w-4 h-4" style={{ color: theme.primaryHex }} />
               <span>Contato & Endereço</span>
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
@@ -215,7 +225,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           {/* Dados Civis */}
           <div>
             <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <Heart className="w-4 h-4 text-indigo-600" />
+              <Heart className="w-4 h-4" style={{ color: theme.primaryHex }} />
               <span>Dados Civis & Família</span>
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
@@ -257,7 +267,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   {member.emergencyContact.name} ({member.emergencyContact.relationship})
                 </p>
               </div>
-              <span className="font-mono text-indigo-600 font-semibold">{member.emergencyContact.phone}</span>
+              <span className="font-mono font-semibold" style={{ color: theme.primaryHex }}>{member.emergencyContact.phone}</span>
             </div>
           )}
         </div>

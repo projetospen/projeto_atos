@@ -117,7 +117,7 @@ export const CalendarView: React.FC = () => {
       case 'santa_ceia':
         return { label: 'Santa Ceia do Senhor', bg: 'bg-rose-100 text-rose-900 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800' };
       case 'ebd':
-        return { label: 'Escola Bíblica (EBD)', bg: 'bg-blue-100 text-blue-900 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800' };
+        return { label: 'Escola Bíblica (EBD)', bg: 'bg-teal-100 text-teal-900 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' };
       case 'culto_jovens':
         return { label: 'Culto de Jovens', bg: 'bg-purple-100 text-purple-900 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800' };
       case 'oracao':

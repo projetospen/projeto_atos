@@ -19,7 +19,7 @@ import {
   initialTransactions, 
   initialChurchProfile 
 } from '../data/mockData';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export type NavTab = 
   | 'dashboard'
@@ -34,11 +34,14 @@ export type NavTab =
 export type AdminRole = 'Administrador Geral' | 'Pastor Presidente' | 'Secretaria Eclesiástica' | 'Tesouraria' | 'Líder de Ministério';
 
 interface ChurchContextType {
+  // Navigation & Role
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   adminRole: AdminRole;
   setAdminRole: (role: AdminRole) => void;
+  isSupabaseConnected: boolean;
   
+  // Data & Branding
   churchProfile: ChurchProfile;
   updateChurchProfile: (profile: ChurchProfile) => void;
   theme: PlatformTheme;
@@ -46,6 +49,12 @@ interface ChurchContextType {
   colorMode: ColorMode;
   setColorMode: (mode: ColorMode) => void;
   toggleColorMode: () => void;
+  
+  // Theme Modal Trigger
+  isThemeModalOpen: boolean;
+  setIsThemeModalOpen: (open: boolean) => void;
+  openThemeModal: () => void;
+  closeThemeModal: () => void;
   
   members: Member[];
   addMember: (member: Omit<Member, 'id' | 'createdAt'>) => void;
@@ -72,9 +81,11 @@ interface ChurchContextType {
   addTransaction: (tx: Omit<FinancialTransaction, 'id'>) => void;
   deleteTransaction: (id: string) => void;
 
+  // Digital Card modal trigger
   selectedMemberForCard: Member | null;
   setSelectedMemberForCard: (member: Member | null) => void;
 
+  // Data management
   exportBackup: () => void;
   importBackup: (jsonString: string) => boolean;
   resetAllData: () => void;
@@ -155,68 +166,62 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [selectedMemberForCard, setSelectedMemberForCard] = useState<Member | null>(null);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(isSupabaseConfigured);
 
-  // --- SINCRONIZAÇÃO INICIAL COM O SUPABASE ---
+  const openThemeModal = () => setIsThemeModalOpen(true);
+  const closeThemeModal = () => setIsThemeModalOpen(false);
+
+  // Supabase Initial Data Sync
   useEffect(() => {
-    const loadFromSupabase = async () => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    let isMounted = true;
+    async function loadFromSupabase() {
       try {
-        // Carrega Membros do Supabase
-        const { data: dbMembers } = await supabase.from('members').select('*');
-        if (dbMembers && dbMembers.length > 0) {
-          const formattedMembers: Member[] = dbMembers.map((m: any) => ({
-            ...m,
-            id: m.id,
-            name: m.name,
-            email: m.email || '',
-            phone: m.phone || '',
-            birthDate: m.birth_date || m.birthDate || '',
-            maritalStatus: m.marital_status || m.maritalStatus || 'Solteiro(a)',
-            department: m.department || '',
-            role: m.role || 'Membro',
-            status: m.status || 'Ativo',
-            createdAt: m.created_at ? m.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
-          }));
-          setMembers(formattedMembers);
+        const { data: profileData, error: profileErr } = await supabase!
+          .from('church_profile')
+          .select('*')
+          .single();
+
+        if (profileData && !profileErr && isMounted) {
+          setChurchProfile(prev => ({ ...prev, ...profileData }));
         }
 
-        // Carrega Transações Financeiras do Supabase
-        const { data: dbTransactions } = await supabase.from('financial_records').select('*');
-        if (dbTransactions && dbTransactions.length > 0) {
-          const formattedTx: FinancialTransaction[] = dbTransactions.map((t: any) => ({
-            ...t,
-            id: t.id,
-            type: t.type,
-            category: t.category,
-            amount: Number(t.amount),
-            date: t.date,
-            description: t.description || ''
-          }));
-          setTransactions(formattedTx);
+        const { data: membersData, error: membersErr } = await supabase!
+          .from('members')
+          .select('*');
+
+        if (membersData && !membersErr && membersData.length > 0 && isMounted) {
+          setMembers(membersData);
         }
 
-        // Carrega Configurações da Igreja
-        const { data: dbSettings } = await supabase.from('church_settings').select('*').limit(1).maybeSingle();
-        if (dbSettings) {
-          setChurchProfile(prev => ({
-            ...prev,
-            name: dbSettings.name || prev.name,
-            pastorName: dbSettings.pastor_name || (prev as any).pastorName || '',
-            cnpj: dbSettings.cnpj || (prev as any).cnpj || '',
-            verse: dbSettings.verse || (prev as any).verse || '',
-            pixKey: dbSettings.pix_key || (prev as any).pixKey || '',
-          }));
+        const { data: deptsData, error: deptsErr } = await supabase!
+          .from('departments')
+          .select('*');
+
+        if (deptsData && !deptsErr && deptsData.length > 0 && isMounted) {
+          setDepartments(deptsData);
         }
+
+        if (isMounted) setIsSupabaseConnected(true);
       } catch (err) {
-        console.warn('Usando dados locais ou offline:', err);
+        console.warn('Supabase: utilizando dados locais como fallback.', err);
       }
-    };
+    }
 
     loadFromSupabase();
+    return () => { isMounted = false; };
   }, []);
 
-  // Mantém cópia local sincronizada para resposta instantânea
+  // Sync to LocalStorage & Supabase (when configured)
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(churchProfile));
+    if (isSupabaseConfigured && supabase) {
+      supabase.from('church_profile').upsert({ id: 'primary', ...churchProfile }).then(({ error }) => {
+        if (error) console.warn('Supabase sync warning:', error.message);
+      });
+    }
   }, [churchProfile]);
 
   useEffect(() => {
@@ -243,72 +248,30 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(STORAGE_KEYS.ROLE, adminRole);
   }, [adminRole]);
 
-  // --- MEMBER CRUD (Com salvamento no Supabase) ---
-  // --- MEMBER CRUD (Com salvamento no Supabase) ---
-  const addMember = async (data: Omit<Member, 'id' | 'createdAt'>) => {
+  // Member CRUD
+  const addMember = (data: Omit<Member, 'id' | 'createdAt'>) => {
     const newMember: Member = {
       ...data,
       id: `mem-${Date.now()}`,
       createdAt: new Date().toISOString().split('T')[0]
     };
     setMembers(prev => [newMember, ...prev]);
-
-    try {
-      const { error } = await supabase.from('members').insert([{
-        id: newMember.id,
-        name: newMember.name,
-        email: (newMember as any).email || null,
-        phone: (newMember as any).phone || null,
-        birth_date: (newMember as any).birthDate || null,
-        marital_status: (newMember as any).maritalStatus || null,
-        department: (newMember as any).department || null,
-        role: (newMember as any).role || 'Membro',
-        status: (newMember as any).status || 'Ativo'
-      }]);
-
-      if (error) {
-        alert("⚠️ Supabase recusou: " + error.message);
-        console.error("Erro Supabase:", error);
-      } else {
-        alert("✅ Membro gravado no Supabase com sucesso!");
-      }
-    } catch (err: any) {
-      alert("❌ Erro de conexão: " + err.message);
-    }
   };
 
-  const updateMember = async (id: string, updatedFields: Partial<Member>) => {
+  const updateMember = (id: string, updatedFields: Partial<Member>) => {
     setMembers(prev => prev.map(m => m.id === id ? { ...m, ...updatedFields } : m));
-
-    try {
-      const payload: any = {};
-      if (updatedFields.name) payload.name = updatedFields.name;
-      if ((updatedFields as any).email !== undefined) payload.email = (updatedFields as any).email;
-      if ((updatedFields as any).phone !== undefined) payload.phone = (updatedFields as any).phone;
-      if ((updatedFields as any).birthDate !== undefined) payload.birth_date = (updatedFields as any).birthDate;
-      if ((updatedFields as any).maritalStatus !== undefined) payload.marital_status = (updatedFields as any).maritalStatus;
-      if ((updatedFields as any).department !== undefined) payload.department = (updatedFields as any).department;
-      if ((updatedFields as any).role !== undefined) payload.role = (updatedFields as any).role;
-      if ((updatedFields as any).status !== undefined) payload.status = (updatedFields as any).status;
-
-      await supabase.from('members').update(payload).eq('id', id);
-    } catch (err) {
-      console.error('Erro ao atualizar membro no Supabase:', err);
-    }
   };
 
-  const deleteMember = async (id: string) => {
+  const deleteMember = (id: string) => {
     setMembers(prev => prev.filter(m => m.id !== id));
-    try {
-      await supabase.from('members').delete().eq('id', id);
-    } catch (err) {
-      console.error('Erro ao excluir membro no Supabase:', err);
-    }
   };
 
   // Department CRUD
   const addDepartment = (data: Omit<Department, 'id'>) => {
-    const newDept: Department = { ...data, id: `dep-${Date.now()}` };
+    const newDept: Department = {
+      ...data,
+      id: `dep-${Date.now()}`
+    };
     setDepartments(prev => [...prev, newDept]);
   };
 
@@ -322,7 +285,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Event CRUD
   const addEvent = (data: Omit<ChurchEvent, 'id'>) => {
-    const newEvent: ChurchEvent = { ...data, id: `evt-${Date.now()}` };
+    const newEvent: ChurchEvent = {
+      ...data,
+      id: `evt-${Date.now()}`
+    };
     setEvents(prev => [...prev, newEvent].sort((a, b) => a.startDate.localeCompare(b.startDate)));
   };
 
@@ -336,7 +302,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Duty CRUD
   const addDuty = (data: Omit<VolunteerDuty, 'id'>) => {
-    const newDuty: VolunteerDuty = { ...data, id: `duty-${Date.now()}` };
+    const newDuty: VolunteerDuty = {
+      ...data,
+      id: `duty-${Date.now()}`
+    };
     setDuties(prev => [newDuty, ...prev]);
   };
 
@@ -362,50 +331,21 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   };
 
-  // --- FINANCIAL TRANSACTION CRUD (Com salvamento no Supabase) ---
-  const addTransaction = async (data: Omit<FinancialTransaction, 'id'>) => {
-    const newTx: FinancialTransaction = { ...data, id: `tx-${Date.now()}` };
+  // Transaction CRUD
+  const addTransaction = (data: Omit<FinancialTransaction, 'id'>) => {
+    const newTx: FinancialTransaction = {
+      ...data,
+      id: `tx-${Date.now()}`
+    };
     setTransactions(prev => [newTx, ...prev]);
-
-    try {
-      await supabase.from('financial_records').insert([{
-        id: newTx.id,
-        type: (newTx as any).type || 'outro',
-        category: (newTx as any).category || null,
-        amount: (newTx as any).amount || 0,
-        date: (newTx as any).date || new Date().toISOString().split('T')[0],
-        description: (newTx as any).description || null
-      }]);
-    } catch (err) {
-      console.error('Erro ao salvar transação no Supabase:', err);
-    }
   };
 
-  const deleteTransaction = async (id: string) => {
+  const deleteTransaction = (id: string) => {
     setTransactions(prev => prev.filter(t => t.id !== id));
-    try {
-      await supabase.from('financial_records').delete().eq('id', id);
-    } catch (err) {
-      console.error('Erro ao excluir transação no Supabase:', err);
-    }
   };
 
-  // --- CHURCH PROFILE UPDATE (Com salvamento no Supabase) ---
-  const updateChurchProfile = async (profile: ChurchProfile) => {
+  const updateChurchProfile = (profile: ChurchProfile) => {
     setChurchProfile(profile);
-
-    try {
-      await supabase.from('church_settings').upsert({
-        id: 'default_church',
-        name: profile.name,
-        pastor_name: (profile as any).pastorName || (profile as any).pastor || null,
-        cnpj: (profile as any).cnpj || null,
-        verse: (profile as any).verse || (profile as any).motto || null,
-        pix_key: (profile as any).pixKey || null
-      });
-    } catch (err) {
-      console.error('Erro ao salvar perfil no Supabase:', err);
-    }
   };
 
   // Backup & Restore
@@ -459,6 +399,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     accent: churchProfile.customAccentColor,
   });
 
+  // Apply CSS variables dynamically to :root for fluid theme transitions
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--color-primary', theme.primaryHex);
@@ -466,6 +407,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     root.style.setProperty('--color-accent', theme.accentHex);
   }, [theme]);
 
+  // Synchronize colorMode class on <html> element
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.COLOR_MODE, colorMode);
     if (colorMode === 'dark') {
@@ -503,6 +445,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setActiveTab,
         adminRole,
         setAdminRole,
+        isSupabaseConnected,
         churchProfile,
         updateChurchProfile,
         theme,
@@ -510,6 +453,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         colorMode,
         setColorMode,
         toggleColorMode,
+        isThemeModalOpen,
+        setIsThemeModalOpen,
+        openThemeModal,
+        closeThemeModal,
         members,
         addMember,
         updateMember,
