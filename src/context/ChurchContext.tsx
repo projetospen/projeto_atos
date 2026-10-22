@@ -382,26 +382,28 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   setMembers(prev => [newMember, ...prev]);
 
-  try {
-    const { error } = await supabase.from('members').insert([{
-      id: newMember.id,
-      name: newMember.name,
-      email: (newMember as any).email || null,
-      phone: (newMember as any).phone || null,
-      birth_date: (newMember as any).birthDate || null,
-      marital_status: (newMember as any).maritalStatus || null,
-      department: (newMember as any).department || null,
-      role: (newMember as any).role || 'Membro',
-      status: (newMember as any).status || 'Ativo'
-    }]);
+    try {
+      if (supabase) {
+        const { error } = await supabase.from('members').insert([{
+          id: newMember.id,
+          name: newMember.name,
+          email: (newMember as any).email || null,
+          phone: (newMember as any).phone || null,
+          birth_date: (newMember as any).birthDate || null,
+          marital_status: (newMember as any).maritalStatus || null,
+          department: (newMember as any).department || null,
+          role: (newMember as any).role || 'Membro',
+          status: (newMember as any).status || 'Ativo'
+        }]);
 
-    if (error) {
-      console.error('Erro no Supabase:', error.message);
+        if (error) {
+          console.error('Erro no Supabase:', error.message);
+        }
+      }
+    } catch (err) {
+      console.error('Erro de conexão:', err);
     }
-  } catch (err) {
-    console.error('Erro de conexão:', err);
-  }
-};
+  };
 
   const updateMember = (id: string, updatedFields: Partial<Member>) => {
     setMembers(prev => prev.map(m => m.id === id ? { ...m, ...updatedFields } : m));
