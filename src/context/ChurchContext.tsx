@@ -8,7 +8,12 @@ import {
   ChurchProfile,
   PlatformTheme,
   PlatformThemeId,
-  ColorMode
+  ColorMode,
+  UserAccount,
+  AdminRole,
+  NavTab,
+  ROLE_PERMISSIONS,
+  isTabAllowed
 } from '../types';
 import { getPlatformTheme } from '../data/themeConfig';
 import { 
@@ -17,21 +22,13 @@ import {
   initialEvents, 
   initialVolunteerDuties, 
   initialTransactions, 
-  initialChurchProfile 
+  initialChurchProfile,
+  defaultAccounts
 } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-export type NavTab = 
-  | 'dashboard'
-  | 'membros'
-  | 'departamentos'
-  | 'calendario'
-  | 'escalas'
-  | 'financeiro'
-  | 'relatorios'
-  | 'configuracoes';
-
-export type AdminRole = 'Administrador Geral' | 'Pastor Presidente' | 'Secretaria Eclesiástica' | 'Tesouraria' | 'Líder de Ministério';
+export type { AdminRole, UserAccount, NavTab } from '../types';
+export { ROLE_PERMISSIONS, isTabAllowed } from '../types';
 
 interface ChurchContextType {
   // Navigation & Role
@@ -39,7 +36,15 @@ interface ChurchContextType {
   setActiveTab: (tab: NavTab) => void;
   adminRole: AdminRole;
   setAdminRole: (role: AdminRole) => void;
+  isTabAllowed: (tab: NavTab) => boolean;
   isSupabaseConnected: boolean;
+
+  // Authentication & Current User
+  currentUser: UserAccount | null;
+  isAuthenticated: boolean;
+  availableAccounts: UserAccount[];
+  login: (email: string, password?: string, targetAccount?: UserAccount) => Promise<boolean>;
+  logout: () => Promise<void>;
   
   // Data & Branding
   churchProfile: ChurchProfile;
@@ -102,13 +107,64 @@ const STORAGE_KEYS = {
   TRANSACTIONS: 'eclesia_transactions_v1',
   ROLE: 'eclesia_admin_role_v1',
   COLOR_MODE: 'atos_color_mode_v1',
+  AUTH_USER: 'atos_auth_user_v1',
 };
 
 export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
-  const [adminRole, setAdminRole] = useState<AdminRole>(() => {
-    return (localStorage.getItem(STORAGE_KEYS.ROLE) as AdminRole) || 'Secretaria Eclesiástica';
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+    if (saved === 'logged_out') return null;
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+    }
+    return defaultAccounts[0]; // Pr. Marcos Vinicius
   });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+    return saved !== 'logged_out';
+  });
+
+  const [adminRole, setAdminRoleState] = useState<AdminRole>(() => {
+    return currentUser?.role || (localStorage.getItem(STORAGE_KEYS.ROLE) as AdminRole) || 'Pastor Presidente';
+  });
+
+  const [activeTab, setActiveTabState] = useState<NavTab>(() => {
+    const role = currentUser?.role || 'Pastor Presidente';
+    return ROLE_PERMISSIONS[role]?.defaultTab || 'dashboard';
+  });
+
+  const checkIsTabAllowed = (tab: NavTab) => {
+    return isTabAllowed(adminRole, tab);
+  };
+
+  const setActiveTab = (tab: NavTab) => {
+    if (isTabAllowed(adminRole, tab)) {
+      setActiveTabState(tab);
+    } else {
+      const fallback = ROLE_PERMISSIONS[adminRole]?.defaultTab || 'membros';
+      setActiveTabState(fallback);
+    }
+  };
+
+  const setAdminRole = (role: AdminRole) => {
+    setAdminRoleState(role);
+    localStorage.setItem(STORAGE_KEYS.ROLE, role);
+    let departmentId = currentUser?.departmentId;
+    let departmentName = currentUser?.departmentName;
+    if (role === 'Líder de Ministério' && !departmentId) {
+      departmentId = 'dep-1';
+      departmentName = 'Ministério de Louvor & Adoração';
+    }
+    if (currentUser) {
+      const updated: UserAccount = { ...currentUser, role, departmentId, departmentName };
+      setCurrentUser(updated);
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
+    }
+    if (!isTabAllowed(role, activeTab)) {
+      setActiveTabState(ROLE_PERMISSIONS[role]?.defaultTab || 'membros');
+    }
+  };
 
   const [churchProfile, setChurchProfile] = useState<ChurchProfile>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -247,6 +303,75 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ROLE, adminRole);
   }, [adminRole]);
+
+  // Available Accounts & Authentication
+  const availableAccounts = defaultAccounts;
+
+  const login = async (email: string, password?: string, targetAccount?: UserAccount): Promise<boolean> => {
+    let userToSet: UserAccount;
+    if (targetAccount) {
+      userToSet = targetAccount;
+    } else {
+      const matched = defaultAccounts.find(a => a.email.toLowerCase() === email.trim().toLowerCase());
+      if (matched) {
+        userToSet = matched;
+      } else {
+        const rawName = email.split('@')[0];
+        const formattedName = rawName
+          .split(/[._-]/)
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+        userToSet = {
+          id: `usr-${Date.now()}`,
+          name: formattedName || 'Membro Administrativo',
+          email: email.trim(),
+          role: 'Administrador Geral',
+        };
+      }
+    }
+
+    if (isSupabaseConfigured && supabase && password) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (!error && data.user) {
+          userToSet = {
+            id: data.user.id,
+            name: data.user.user_metadata?.name || userToSet.name,
+            email: data.user.email || email,
+            role: (data.user.user_metadata?.role as AdminRole) || userToSet.role,
+          };
+        }
+      } catch (err) {
+        console.warn('Supabase signIn: autenticando em modo local', err);
+      }
+    }
+
+    setCurrentUser(userToSet);
+    setIsAuthenticated(true);
+    setAdminRoleState(userToSet.role);
+    localStorage.setItem(STORAGE_KEYS.ROLE, userToSet.role);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(userToSet));
+
+    // Ensure tab switches to allowed default tab for this profile
+    const allowed = ROLE_PERMISSIONS[userToSet.role]?.allowedTabs || [];
+    if (!allowed.includes(activeTab)) {
+      setActiveTabState(ROLE_PERMISSIONS[userToSet.role]?.defaultTab || 'membros');
+    }
+    return true;
+  };
+
+  const logout = async () => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.warn('Supabase signOut notice:', err);
+      }
+    }
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, 'logged_out');
+  };
 
   // Member CRUD
   const addMember = async (data: Omit<Member, 'id' | 'createdAt'>) => {
@@ -465,7 +590,13 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setActiveTab,
         adminRole,
         setAdminRole,
+        isTabAllowed: checkIsTabAllowed,
         isSupabaseConnected,
+        currentUser,
+        isAuthenticated,
+        availableAccounts,
+        login,
+        logout,
         churchProfile,
         updateChurchProfile,
         theme,

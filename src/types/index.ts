@@ -231,3 +231,78 @@ export interface ChurchProfile {
   socialInstagram?: string;
   bankPixKey?: string;
 }
+
+export type NavTab = 
+  | 'dashboard'
+  | 'membros'
+  | 'departamentos'
+  | 'calendario'
+  | 'escalas'
+  | 'financeiro'
+  | 'relatorios'
+  | 'configuracoes';
+
+export type AdminRole = 
+  | 'Administrador Geral' 
+  | 'Pastor Presidente' 
+  | 'Secretaria Eclesiástica' 
+  | 'Tesouraria' 
+  | 'Líder de Ministério';
+
+export interface UserAccount {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminRole;
+  phone?: string;
+  avatarUrl?: string;
+  departmentId?: string; // ID of the specific department for Ministry Leaders
+  departmentName?: string;
+}
+
+export interface RolePermissionConfig {
+  allowedTabs: NavTab[];
+  defaultTab: NavTab;
+  scopeLabel: string;
+  description: string;
+}
+
+export const ROLE_PERMISSIONS: Record<AdminRole, RolePermissionConfig> = {
+  'Pastor Presidente': {
+    allowedTabs: ['dashboard', 'membros', 'departamentos', 'calendario', 'escalas', 'financeiro', 'relatorios', 'configuracoes'],
+    defaultTab: 'dashboard',
+    scopeLabel: 'Acesso Geral à Plataforma',
+    description: 'Acesso irrestrito a todos os módulos, tesouraria, secretaria e configurações.',
+  },
+  'Administrador Geral': {
+    allowedTabs: ['dashboard', 'membros', 'departamentos', 'calendario', 'escalas', 'financeiro', 'relatorios', 'configuracoes'],
+    defaultTab: 'dashboard',
+    scopeLabel: 'Acesso Administrativo Total',
+    description: 'Gestão completa do sistema, módulos e permissões da igreja.',
+  },
+  'Secretaria Eclesiástica': {
+    allowedTabs: ['membros', 'calendario', 'escalas', 'relatorios'],
+    defaultTab: 'membros',
+    scopeLabel: 'Secretaria, Membros, Escalas & Relatórios',
+    description: 'Acesso a Membros & Secretaria, Calendário, Escalas de Voluntários e Relatórios.',
+  },
+  'Líder de Ministério': {
+    allowedTabs: ['departamentos', 'calendario'],
+    defaultTab: 'departamentos',
+    scopeLabel: 'Seu Próprio Departamento & Calendário',
+    description: 'Acesso exclusivo ao seu próprio departamento ministerial e à agenda/calendário.',
+  },
+  'Tesouraria': {
+    allowedTabs: ['financeiro'],
+    defaultTab: 'financeiro',
+    scopeLabel: 'Exclusivo Tesouraria & Dízimos',
+    description: 'Acesso exclusivo ao Livro Caixa, entradas de dízimos/ofertas e tesouraria.',
+  },
+};
+
+export const isTabAllowed = (role: AdminRole, tab: NavTab): boolean => {
+  const config = ROLE_PERMISSIONS[role];
+  if (!config) return false;
+  return config.allowedTabs.includes(tab);
+};
+

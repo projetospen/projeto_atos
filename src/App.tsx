@@ -19,20 +19,78 @@ import { MemberCardModal } from './components/common/MemberCardModal';
 import { MemberFormModal } from './components/members/MemberFormModal';
 import { EventFormModal } from './components/calendar/EventFormModal';
 import { ThemeCustomizerModal } from './components/common/ThemeCustomizerModal';
+import { LoginView } from './components/auth/LoginView';
+import { ROLE_PERMISSIONS } from './types';
+import { ShieldAlert, ArrowRight } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { 
     activeTab, 
+    setActiveTab,
     selectedMemberForCard, 
     setSelectedMemberForCard, 
-    churchProfile 
+    churchProfile,
+    isAuthenticated,
+    adminRole,
+    currentUser,
+    isTabAllowed,
+    theme
   } = useChurch();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isQuickMemberModalOpen, setIsQuickMemberModalOpen] = useState(false);
   const [isQuickEventModalOpen, setIsQuickEventModalOpen] = useState(false);
 
+  // Auto-redirect if on a tab not allowed for current role
+  React.useEffect(() => {
+    if (isAuthenticated && !isTabAllowed(activeTab)) {
+      const allowedDefault = ROLE_PERMISSIONS[adminRole]?.defaultTab || 'membros';
+      setActiveTab(allowedDefault);
+    }
+  }, [adminRole, activeTab, isAuthenticated]);
+
+  // If not logged in, present ecclesiastical login screen so another account can sign in
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
   const renderActiveView = () => {
+    // Check permission for active view
+    if (!isTabAllowed(activeTab)) {
+      const perms = ROLE_PERMISSIONS[adminRole];
+      return (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center max-w-lg mx-auto my-12 space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-white">
+              Acesso Restrito ao Módulo
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              O seu perfil de <strong>{adminRole}</strong> não possui autorização para acessar este conteúdo.
+            </p>
+          </div>
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl text-left text-xs space-y-1">
+            <p className="font-semibold text-slate-700 dark:text-slate-200">
+              Seu escopo permitido:
+            </p>
+            <p className="text-slate-500 dark:text-slate-400">
+              {perms?.description || perms?.scopeLabel}
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveTab(perms?.defaultTab || 'membros')}
+            className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all active:scale-95"
+            style={{ backgroundColor: theme.primaryHex }}
+          >
+            <span>Ir para meu módulo autorizado</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'dashboard':
         return (

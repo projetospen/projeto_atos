@@ -1,4 +1,4 @@
-import { ChurchProfile, Department, Member, ChurchEvent, VolunteerDuty, FinancialTransaction } from '../types';
+import { ChurchProfile, Department, Member, ChurchEvent, VolunteerDuty, FinancialTransaction, UserAccount } from '../types';
 
 export const initialChurchProfile: ChurchProfile = {
   name: "Comunidade Evangélica Graça & Paz",
@@ -781,3 +781,62 @@ export const initialTransactions: FinancialTransaction[] = [
     createdBy: "Carlos Alberto Mendes"
   }
 ];
+
+export const defaultAccounts: UserAccount[] = [
+  {
+    id: "usr-1",
+    name: "Pr. Marcos Vinícius de Oliveira",
+    email: "pastor@gracaepaz.org.br",
+    role: "Pastor Presidente",
+    phone: "(11) 98765-4321"
+  },
+  {
+    id: "usr-2",
+    name: "Ester Alencar Ribeiro",
+    email: "secretaria@gracaepaz.org.br",
+    role: "Secretaria Eclesiástica",
+    phone: "(11) 98765-1122"
+  },
+  {
+    id: "usr-3",
+    name: "Dc. Carlos Alberto Mendes",
+    email: "tesouraria@gracaepaz.org.br",
+    role: "Tesouraria",
+    phone: "(11) 98765-3344"
+  },
+  {
+    id: "usr-4",
+    name: "Administrador do Sistema",
+    email: "admin@atosigrejas.com.br",
+    role: "Administrador Geral",
+    phone: "(11) 98765-9988"
+  },
+  {
+    id: "usr-5",
+    name: "Diác. Samuel Costa",
+    email: "louvor@gracaepaz.org.br",
+    role: "Líder de Ministério",
+    phone: "(11) 98765-5566",
+    departmentId: "dep-1",
+    departmentName: "Ministério de Louvor & Adoração"
+  },
+  {
+    id: "usr-6",
+    name: "Líder Sarah Nogueira",
+    email: "infantil@gracaepaz.org.br",
+    role: "Líder de Ministério",
+    phone: "(11) 98765-7788",
+    departmentId: "dep-3",
+    departmentName: "ATOS Kids (Infantil)"
+  },
+  {
+    id: "usr-7",
+    name: "Líder Matheus Prado",
+    email: "jovens@gracaepaz.org.br",
+    role: "Líder de Ministério",
+    phone: "(11) 98765-8899",
+    departmentId: "dep-4",
+    departmentName: "Rede de Jovens (Geração Eleita)"
+  }
+];
+

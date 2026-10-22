@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useChurch, NavTab } from '../../context/ChurchContext';
+import { ROLE_PERMISSIONS } from '../../types';
 import { ChurchEmblemRenderer } from '../common/ChurchEmblemRenderer';
 import { EmblemCustomizerModal } from '../common/EmblemCustomizerModal';
 import { 
@@ -12,7 +13,8 @@ import {
   FileText, 
   Settings, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,11 +30,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     members, 
     events, 
     departments, 
-    theme
+    theme,
+    currentUser,
+    logout,
+    adminRole
   } = useChurch();
   const [isEmblemModalOpen, setIsEmblemModalOpen] = useState(false);
 
-  const menuItems: { id: NavTab; label: string; icon: React.ElementType; badge?: string | number; badgeColor?: string }[] = [
+  const allMenuItems: { id: NavTab; label: string; icon: React.ElementType; badge?: string | number; badgeColor?: string }[] = [
     { id: 'dashboard', label: 'Visão Geral', icon: LayoutDashboard },
     { 
       id: 'membros', 
@@ -60,6 +65,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { id: 'relatorios', label: 'Relatórios & Atas', icon: FileText },
     { id: 'configuracoes', label: 'Configurações', icon: Settings },
   ];
+
+  // Restrict menu items strictly to the permissions of the current role
+  const roleConfig = ROLE_PERMISSIONS[adminRole];
+  const allowedTabs = roleConfig ? roleConfig.allowedTabs : ['dashboard'];
+
+  const menuItems = allMenuItems
+    .filter(item => allowedTabs.includes(item.id))
+    .map(item => {
+      if (item.id === 'departamentos' && adminRole === 'Líder de Ministério') {
+        return {
+          ...item,
+          label: currentUser?.departmentName ? `Meu Ministério` : 'Meu Departamento',
+          badge: 1,
+          badgeColor: 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
+        };
+      }
+      return item;
+    });
 
   const handleSelectTab = (tab: NavTab) => {
     setActiveTab(tab);
@@ -141,9 +164,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Navigation Items */}
         <nav className="flex-1 px-2.5 py-1 space-y-0.5 overflow-y-auto no-scrollbar">
-          <p className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Menu Administrativo
-          </p>
+          <div className="px-3 py-1 flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span>
+              {adminRole === 'Líder de Ministério' 
+                ? 'Meu Ministério' 
+                : adminRole === 'Tesouraria' 
+                  ? 'Livro Caixa' 
+                  : adminRole === 'Secretaria Eclesiástica' 
+                    ? 'Secretaria & Cultos' 
+                    : 'Menu Administrativo'}
+            </span>
+            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700/60 lowercase">
+              {menuItems.length} {menuItems.length === 1 ? 'módulo' : 'módulos'}
+            </span>
+          </div>
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -180,19 +214,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           })}
         </nav>
 
-        {/* Pastoral Leadership Footer */}
-        <div className="p-3 sm:p-3.5 border-t border-slate-800 dark:border-slate-800/80 bg-slate-950/40">
+        {/* Active User Session & Pastoral Footer */}
+        <div className="p-3 sm:p-3.5 border-t border-slate-800 dark:border-slate-800/80 bg-slate-950/60">
           <div className="flex items-center gap-2.5 min-w-0">
             <div 
               className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs shrink-0"
               style={{ color: theme.primaryHex }}
             >
-              {churchProfile.seniorPastor.split(' ')[1]?.charAt(0) || 'P'}
+              {currentUser?.name.charAt(0) || churchProfile.seniorPastor.split(' ')[1]?.charAt(0) || 'P'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-slate-200 truncate">{churchProfile.seniorPastor}</p>
-              <p className="text-[10px] text-slate-400">Pastor Presidente</p>
+              <p className="text-xs font-semibold text-slate-200 truncate">
+                {currentUser?.name || churchProfile.seniorPastor}
+              </p>
+              <p className="text-[10px] text-slate-400 truncate">
+                {currentUser?.role || 'Pastor Presidente'}
+              </p>
             </div>
+            <button
+              onClick={() => logout()}
+              title="Sair da Conta (Logout)"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
+              aria-label="Sair da conta"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>

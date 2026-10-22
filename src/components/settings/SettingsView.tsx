@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useChurch } from '../../context/ChurchContext';
-import { ChurchProfile } from '../../types';
+import { ChurchProfile, ROLE_PERMISSIONS } from '../../types';
 import { ChurchEmblemRenderer } from '../common/ChurchEmblemRenderer';
 import { EmblemCustomizerModal } from '../common/EmblemCustomizerModal';
 import { ThemeCustomizerModal } from '../common/ThemeCustomizerModal';
@@ -19,7 +19,9 @@ import {
   Palette,
   Sparkles,
   Sun,
-  Moon
+  Moon,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -34,7 +36,11 @@ export const SettingsView: React.FC = () => {
     events,
     theme,
     colorMode,
-    toggleColorMode 
+    toggleColorMode,
+    currentUser,
+    logout,
+    availableAccounts,
+    login
   } = useChurch();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -403,6 +409,59 @@ export const SettingsView: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Active Account & Logout Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5" style={{ color: theme.primaryHex }} />
+                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-800 dark:text-white">
+                  Sessão & Conta Ativa
+                </h4>
+              </div>
+              <span 
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: `${theme.primaryHex}20`, color: theme.primaryHex }}
+              >
+                Conectado
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80">
+              <div 
+                className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0"
+                style={{ backgroundColor: theme.primaryHex }}
+              >
+                {currentUser?.name.charAt(0) || 'U'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  {currentUser?.name || churchProfile.seniorPastor}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {currentUser?.email || 'admin@atos.org'}
+                </p>
+                <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
+                  Cargo: {currentUser?.role || 'Pastor Presidente'}
+                </p>
+                <span className="inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                  {ROLE_PERMISSIONS[currentUser?.role || 'Pastor Presidente']?.scopeLabel}
+                </span>
+              </div>
+            </div>
+
+            {/* Logout Action Button */}
+            <button
+              onClick={() => logout()}
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sair da Conta (Logout)</span>
+            </button>
+            <p className="text-[11px] text-slate-400 text-center">
+              Ao sair, a tela de login será exibida para que outro usuário possa acessar o sistema.
+            </p>
           </div>
 
           {/* Reset Demo Data Box */}

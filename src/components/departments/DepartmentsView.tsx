@@ -18,15 +18,24 @@ import {
   Globe, 
   HeartHandshake,
   Church,
-  Target
+  Target,
+  ShieldCheck
 } from 'lucide-react';
 
 export const DepartmentsView: React.FC = () => {
-  const { departments, members, theme } = useChurch();
+  const { departments, members, theme, adminRole, currentUser } = useChurch();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [detailsDept, setDetailsDept] = useState<Department | null>(null);
+
+  // If role is Líder de Ministério, each leader only has access to their own department
+  const isMinistryLeader = adminRole === 'Líder de Ministério';
+  const leaderDeptId = currentUser?.departmentId || 'dep-1';
+  
+  const visibleDepartments = isMinistryLeader
+    ? departments.filter(d => d.id === leaderDeptId || d.name === currentUser?.departmentName)
+    : departments;
 
   const handleOpenAdd = () => {
     setEditingDept(null);
@@ -58,31 +67,73 @@ export const DepartmentsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Ministerial Scope Alert for Leaders */}
+      {isMinistryLeader && (
+        <div 
+          className="p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+          style={{ 
+            backgroundColor: `${theme.primaryHex}15`, 
+            borderColor: `${theme.primaryHex}40` 
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white shrink-0 shadow-xs"
+              style={{ backgroundColor: theme.primaryHex }}
+            >
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
+                Seu Departamento Ministerial: {visibleDepartments[0]?.name || currentUser?.departmentName || 'Setor Designado'}
+              </p>
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] mt-0.5">
+                Olá, <strong>{currentUser?.name}</strong>. Como Líder de Ministério, você possui acesso exclusivo para gerenciar os voluntários, metas e escalas deste departamento.
+              </p>
+            </div>
+          </div>
+          <span 
+            className="self-start sm:self-center px-3 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-white/80 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-2xs"
+          >
+            Líder Ministerial
+          </span>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
             <Building2 className="w-5 h-5" style={{ color: theme.primaryHex }} />
-            <span>Departamentos & Ministérios</span>
+            <span>
+              {isMinistryLeader 
+                ? (visibleDepartments[0]?.name || 'Meu Departamento Ministerial')
+                : 'Departamentos & Ministérios'}
+            </span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Organização dos ministérios, lideranças, escalas de trabalho, voluntários e orçamentos
+            {isMinistryLeader
+              ? 'Gestão da sua equipe de voluntários, reuniões e metas ministeriais'
+              : 'Organização dos ministérios, lideranças, escalas de trabalho, voluntários e orçamentos'}
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center gap-1.5 px-4 py-2 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
-          style={{ backgroundColor: theme.primaryHex }}
-        >
-          <Plus className="w-4 h-4" />
-          <span>Novo Departamento</span>
-        </button>
+        {/* Only Pastor Presidente & General Admins can create new departments */}
+        {!isMinistryLeader && (
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center gap-1.5 px-4 py-2 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+            style={{ backgroundColor: theme.primaryHex }}
+          >
+            <Plus className="w-4 h-4" />
+            <span>Novo Departamento</span>
+          </button>
+        )}
       </div>
 
       {/* Department Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {departments.map((dept) => {
+        {visibleDepartments.map((dept) => {
           const leader = members.find(m => m.id === dept.leaderMemberId);
           const deptVolunteers = members.filter(m => m.departmentIds?.includes(dept.id));
           const IconComponent = getDeptIcon(dept.iconName);
