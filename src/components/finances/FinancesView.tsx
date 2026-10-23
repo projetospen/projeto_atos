@@ -15,11 +15,12 @@ import {
   Filter, 
   ShieldCheck, 
   TrendingUp, 
-  CreditCard 
+  CreditCard,
+  Sparkles
 } from 'lucide-react';
 
 export const FinancesView: React.FC = () => {
-  const { transactions, deleteTransaction, members, churchProfile, theme } = useChurch();
+  const { transactions, deleteTransaction, members, churchProfile, theme, currentUser, adminRole } = useChurch();
 
   const [filterType, setFilterType] = useState<'all' | 'entrada' | 'saida'>('all');
   const [search, setSearch] = useState('');
@@ -88,6 +89,54 @@ export const FinancesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Welcome Banner for Tesouraria */}
+      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-r ${theme.bannerGradient} text-white p-6 sm:p-8 shadow-xl border border-slate-800 transition-all`}>
+        <div className="relative z-10 max-w-2xl">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${theme.bannerAccentBadge}`}>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Tesouraria & Livro Caixa Eclesiástico</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Graça e Paz, {currentUser?.name || churchProfile.treasurerName || 'Tesouraria'}!
+          </h1>
+          <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+            Gestão financeira e prestação de contas da <span className="font-semibold text-white">{churchProfile.name}</span> no sistema <strong style={{ color: theme.accentHex }}>ATOS</strong>. Registre entradas de dízimos, ofertas, despesas correntes do templo e emita recibos.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2.5">
+            <button
+              onClick={() => setIsFormOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>Novo Lançamento Financeiro</span>
+            </button>
+            <button
+              onClick={() => setFilterType(filterType === 'entrada' ? 'all' : 'entrada')}
+              className="flex items-center gap-1.5 px-4 py-2 bg-slate-800/90 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 transition-all cursor-pointer"
+            >
+              <Receipt className="w-4 h-4" style={{ color: theme.accentHex }} />
+              <span>Ver Dízimos & Ofertas</span>
+            </button>
+            <button
+              onClick={() => setFilterType(filterType === 'saida' ? 'all' : 'saida')}
+              className="flex items-center gap-1.5 px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 transition-all cursor-pointer"
+            >
+              <ArrowDownRight className="w-4 h-4 text-rose-400" />
+              <span>Ver Despesas do Mês</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Decorative background shape */}
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-white/10 to-transparent pointer-events-none hidden sm:block opacity-40" 
+        />
+      </div>
+
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div>

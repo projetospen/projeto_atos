@@ -18,11 +18,23 @@ import {
   LayoutGrid, 
   List, 
   Shield, 
-  Droplet
+  Droplet,
+  Sparkles,
+  ClipboardList,
+  Calendar
 } from 'lucide-react';
 
 export const MembersView: React.FC = () => {
-  const { members, departments, setSelectedMemberForCard, churchProfile, theme } = useChurch();
+  const { 
+    members, 
+    departments, 
+    setSelectedMemberForCard, 
+    churchProfile, 
+    theme,
+    currentUser,
+    adminRole,
+    setActiveTab
+  } = useChurch();
 
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -125,7 +137,55 @@ export const MembersView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Welcome Banner for Secretaria */}
+      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-r ${theme.bannerGradient} text-white p-6 sm:p-8 shadow-xl border border-slate-800 transition-all`}>
+        <div className="relative z-10 max-w-2xl">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${theme.bannerAccentBadge}`}>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Secretaria Eclesiástica • Rol de Membros</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Graça e Paz, {currentUser?.name || churchProfile.secretaryName || 'Secretaria'}!
+          </h1>
+          <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+            Painel da Secretaria da <span className="font-semibold text-white">{churchProfile.name}</span> no sistema <strong style={{ color: theme.accentHex }}>ATOS</strong>. Gerencie o rol de membros, batismos, credenciais e registros eclesiásticos oficiais.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2.5">
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer hover:opacity-90"
+              style={{
+                backgroundColor: theme.primaryHex,
+                color: theme.id === 'dourado_real' ? '#020617' : '#ffffff'
+              }}
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Novo Cadastro de Membro</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('escalas')}
+              className="flex items-center gap-1.5 px-4 py-2 bg-slate-800/90 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 transition-all cursor-pointer"
+            >
+              <ClipboardList className="w-4 h-4" style={{ color: theme.accentHex }} />
+              <span>Escalas de Voluntários</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('calendario')}
+              className="flex items-center gap-1.5 px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-white font-medium text-xs rounded-xl border border-slate-700 transition-all cursor-pointer"
+            >
+              <Calendar className="w-4 h-4 text-emerald-400" />
+              <span>Calendário de Cultos</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Decorative background shape */}
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-white/10 to-transparent pointer-events-none hidden sm:block opacity-40" 
+        />
+      </div>
+
       {/* Top Banner / Actions */}
       {/* Header and Add Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
