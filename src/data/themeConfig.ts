@@ -1,6 +1,39 @@
-import { PlatformTheme, PlatformThemeId } from '../types';
+import { PlatformTheme, PlatformThemeId, ThemeDarkModeConfig } from '../types';
 
-export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  let clean = hex.replace('#', '');
+  if (clean.length === 3) {
+    clean = clean.split('').map(c => c + c).join('');
+  }
+  const num = parseInt(clean, 16) || 0;
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
+}
+
+function mixColor(targetHex: string, tintHex: string, weight: number): string {
+  const c1 = hexToRgb(targetHex);
+  const c2 = hexToRgb(tintHex);
+  const r = Math.round(c1.r * (1 - weight) + c2.r * weight);
+  const g = Math.round(c1.g * (1 - weight) + c2.g * weight);
+  const b = Math.round(c1.b * (1 - weight) + c2.b * weight);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+export function generateDarkModeConfig(primaryHex: string): ThemeDarkModeConfig {
+  return {
+    bgBase: mixColor('#030304', primaryHex, 0.05),
+    bgCard: mixColor('#07070a', primaryHex, 0.09),
+    bgSurface: mixColor('#0d0e14', primaryHex, 0.15),
+    borderColor: mixColor('#181922', primaryHex, 0.24),
+    borderSubtle: mixColor('#111218', primaryHex, 0.17),
+    glowColor: `color-mix(in srgb, ${primaryHex} 14%, transparent)`,
+  };
+}
+
+export const platformThemes: Record<Exclude<PlatformThemeId, 'personalizado'>, PlatformTheme> = {
   dourado_real: {
     id: 'dourado_real',
     name: 'Dourado Real & Âmbar',
@@ -19,7 +52,16 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-amber-400 dark:border-amber-500',
     ringColor: 'ring-amber-400/30',
     cardHighlight: 'border-amber-200/80 bg-amber-50/40 dark:border-amber-500/30 dark:bg-amber-950/20',
+    darkModeConfig: {
+      bgBase: '#0b0905',
+      bgCard: '#151108',
+      bgSurface: '#211a0c',
+      borderColor: '#392d15',
+      borderSubtle: '#281f0e',
+      glowColor: 'rgba(245, 158, 11, 0.12)',
+    },
   },
+
   azul_celestial: {
     id: 'azul_celestial',
     name: 'Azul Celestial & Marinho',
@@ -38,7 +80,16 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-blue-400 dark:border-blue-500',
     ringColor: 'ring-blue-400/30',
     cardHighlight: 'border-blue-200/80 bg-blue-50/40 dark:border-blue-500/30 dark:bg-blue-950/20',
+    darkModeConfig: {
+      bgBase: '#040713',
+      bgCard: '#091024',
+      bgSurface: '#101b3d',
+      borderColor: '#1c2d5c',
+      borderSubtle: '#142042',
+      glowColor: 'rgba(37, 99, 235, 0.12)',
+    },
   },
+
   rubi_fogo: {
     id: 'rubi_fogo',
     name: 'Rubi Fogo & Avivamento',
@@ -57,7 +108,16 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-rose-400 dark:border-rose-500',
     ringColor: 'ring-rose-400/30',
     cardHighlight: 'border-rose-200/80 bg-rose-50/40 dark:border-rose-500/30 dark:bg-rose-950/20',
+    darkModeConfig: {
+      bgBase: '#0c0406',
+      bgCard: '#18080d',
+      bgSurface: '#260c16',
+      borderColor: '#421625',
+      borderSubtle: '#2f0f1b',
+      glowColor: 'rgba(225, 29, 72, 0.12)',
+    },
   },
+
   esmeralda_vida: {
     id: 'esmeralda_vida',
     name: 'Esmeralda & Vida Nova',
@@ -76,7 +136,16 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-emerald-400 dark:border-emerald-500',
     ringColor: 'ring-emerald-400/30',
     cardHighlight: 'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-500/30 dark:bg-emerald-950/20',
+    darkModeConfig: {
+      bgBase: '#040b08',
+      bgCard: '#081710',
+      bgSurface: '#0e271b',
+      borderColor: '#174530',
+      borderSubtle: '#103022',
+      glowColor: 'rgba(5, 150, 105, 0.12)',
+    },
   },
+
   purpura_nobre: {
     id: 'purpura_nobre',
     name: 'Púrpura & Majestade Real',
@@ -95,7 +164,16 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-purple-400 dark:border-purple-500',
     ringColor: 'ring-purple-400/30',
     cardHighlight: 'border-purple-200/80 bg-purple-50/40 dark:border-purple-500/30 dark:bg-purple-950/20',
+    darkModeConfig: {
+      bgBase: '#070412',
+      bgCard: '#100823',
+      bgSurface: '#1b0e3b',
+      borderColor: '#351b6e',
+      borderSubtle: '#26134f',
+      glowColor: 'rgba(124, 58, 237, 0.12)',
+    },
   },
+
   oceano_profundo: {
     id: 'oceano_profundo',
     name: 'Oceano & Ciano da Graça',
@@ -114,7 +192,212 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-cyan-400 dark:border-cyan-500',
     ringColor: 'ring-cyan-400/30',
     cardHighlight: 'border-cyan-200/80 bg-cyan-50/40 dark:border-cyan-500/30 dark:bg-cyan-950/20',
+    darkModeConfig: {
+      bgBase: '#03090c',
+      bgCard: '#06151c',
+      bgSurface: '#0c232f',
+      borderColor: '#133d52',
+      borderSubtle: '#0d2b3a',
+      glowColor: 'rgba(8, 145, 178, 0.12)',
+    },
   },
+
+  vinho_alianca: {
+    id: 'vinho_alianca',
+    name: 'Vinho & Cálice da Aliança',
+    tagline: 'Comunhão da ceia, sacrifício do Calvário e aliança eterna',
+    primaryHex: '#b91c1c',
+    primaryHoverHex: '#991b1b',
+    accentHex: '#f87171',
+    sidebarActiveBg: 'bg-red-700 text-white font-bold shadow-md shadow-red-700/20',
+    sidebarAccentText: 'text-red-400',
+    btnPrimary: 'bg-red-700 hover:bg-red-600 text-white font-bold',
+    btnSecondary: 'bg-red-50 hover:bg-red-100 text-red-900 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900',
+    bannerGradient: 'from-slate-950 via-red-950 to-slate-900',
+    bannerAccentBadge: 'bg-red-500/20 text-red-300 border-red-400/30',
+    badgeBg: 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900',
+    textAccent: 'text-red-600 dark:text-red-400',
+    borderAccent: 'border-red-500',
+    ringColor: 'ring-red-400/30',
+    cardHighlight: 'border-red-200/80 bg-red-50/40 dark:border-red-500/30 dark:bg-red-950/20',
+    darkModeConfig: {
+      bgBase: '#0b0404',
+      bgCard: '#170707',
+      bgSurface: '#260a0a',
+      borderColor: '#421313',
+      borderSubtle: '#2e0d0d',
+      glowColor: 'rgba(185, 28, 28, 0.12)',
+    },
+  },
+
+  bronze_altar: {
+    id: 'bronze_altar',
+    name: 'Bronze & Fogo do Altar',
+    tagline: 'Altar de adoração, consagração ardente e fervor contínuo',
+    primaryHex: '#ea580c',
+    primaryHoverHex: '#c2410c',
+    accentHex: '#fb923c',
+    sidebarActiveBg: 'bg-orange-600 text-white font-bold shadow-md shadow-orange-600/20',
+    sidebarAccentText: 'text-orange-400',
+    btnPrimary: 'bg-orange-600 hover:bg-orange-500 text-white font-bold',
+    btnSecondary: 'bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900',
+    bannerGradient: 'from-slate-950 via-orange-950 to-slate-900',
+    bannerAccentBadge: 'bg-orange-500/20 text-orange-300 border-orange-400/30',
+    badgeBg: 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900',
+    textAccent: 'text-orange-600 dark:text-orange-400',
+    borderAccent: 'border-orange-500',
+    ringColor: 'ring-orange-400/30',
+    cardHighlight: 'border-orange-200/80 bg-orange-50/40 dark:border-orange-500/30 dark:bg-orange-950/20',
+    darkModeConfig: {
+      bgBase: '#0c0602',
+      bgCard: '#180c05',
+      bgSurface: '#281308',
+      borderColor: '#45210e',
+      borderSubtle: '#30170a',
+      glowColor: 'rgba(234, 88, 12, 0.12)',
+    },
+  },
+
+  indigo_santuario: {
+    id: 'indigo_santuario',
+    name: 'Índigo & Santuário Sagrado',
+    tagline: 'Mistério divino, profundidade bíblica e oração contemplativa',
+    primaryHex: '#4f46e5',
+    primaryHoverHex: '#4338ca',
+    accentHex: '#818cf8',
+    sidebarActiveBg: 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20',
+    sidebarAccentText: 'text-indigo-400',
+    btnPrimary: 'bg-indigo-600 hover:bg-indigo-500 text-white font-bold',
+    btnSecondary: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-900',
+    bannerGradient: 'from-slate-950 via-indigo-950 to-slate-900',
+    bannerAccentBadge: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30',
+    badgeBg: 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-900',
+    textAccent: 'text-indigo-600 dark:text-indigo-400',
+    borderAccent: 'border-indigo-500',
+    ringColor: 'ring-indigo-400/30',
+    cardHighlight: 'border-indigo-200/80 bg-indigo-50/40 dark:border-indigo-500/30 dark:bg-indigo-950/20',
+    darkModeConfig: {
+      bgBase: '#050512',
+      bgCard: '#0b0c24',
+      bgSurface: '#12143b',
+      borderColor: '#222668',
+      borderSubtle: '#181b49',
+      glowColor: 'rgba(79, 70, 229, 0.12)',
+    },
+  },
+
+  oliva_getsemani: {
+    id: 'oliva_getsemani',
+    name: 'Verde Oliva & Getsêmani',
+    tagline: 'Monte das Oliveiras, paz celestial e unção do Espírito',
+    primaryHex: '#65a30d',
+    primaryHoverHex: '#4d7c0f',
+    accentHex: '#a3e635',
+    sidebarActiveBg: 'bg-lime-600 text-white font-bold shadow-md shadow-lime-600/20',
+    sidebarAccentText: 'text-lime-400',
+    btnPrimary: 'bg-lime-600 hover:bg-lime-500 text-white font-bold',
+    btnSecondary: 'bg-lime-50 hover:bg-lime-100 text-lime-900 border border-lime-200 dark:bg-lime-950/40 dark:text-lime-300 dark:border-lime-900',
+    bannerGradient: 'from-slate-950 via-lime-950 to-slate-900',
+    bannerAccentBadge: 'bg-lime-500/20 text-lime-300 border-lime-400/30',
+    badgeBg: 'bg-lime-50 text-lime-800 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300 dark:border-lime-900',
+    textAccent: 'text-lime-600 dark:text-lime-400',
+    borderAccent: 'border-lime-500',
+    ringColor: 'ring-lime-400/30',
+    cardHighlight: 'border-lime-200/80 bg-lime-50/40 dark:border-lime-500/30 dark:bg-lime-950/20',
+    darkModeConfig: {
+      bgBase: '#060a03',
+      bgCard: '#0d1606',
+      bgSurface: '#15240a',
+      borderColor: '#294314',
+      borderSubtle: '#1d300e',
+      glowColor: 'rgba(101, 163, 13, 0.12)',
+    },
+  },
+
+  rosa_shekinah: {
+    id: 'rosa_shekinah',
+    name: 'Rosa Shekinah & Glória',
+    tagline: 'Rosa de Sarom, júbilo no Espírito e graça resplandecente',
+    primaryHex: '#db2777',
+    primaryHoverHex: '#be185d',
+    accentHex: '#f472b6',
+    sidebarActiveBg: 'bg-pink-600 text-white font-bold shadow-md shadow-pink-600/20',
+    sidebarAccentText: 'text-pink-400',
+    btnPrimary: 'bg-pink-600 hover:bg-pink-500 text-white font-bold',
+    btnSecondary: 'bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-900',
+    bannerGradient: 'from-slate-950 via-pink-950 to-slate-900',
+    bannerAccentBadge: 'bg-pink-500/20 text-pink-300 border-pink-400/30',
+    badgeBg: 'bg-pink-50 text-pink-800 border-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:border-pink-900',
+    textAccent: 'text-pink-600 dark:text-pink-400',
+    borderAccent: 'border-pink-500',
+    ringColor: 'ring-pink-400/30',
+    cardHighlight: 'border-pink-200/80 bg-pink-50/40 dark:border-pink-500/30 dark:bg-pink-950/20',
+    darkModeConfig: {
+      bgBase: '#0d0309',
+      bgCard: '#1a0612',
+      bgSurface: '#290b1c',
+      borderColor: '#471331',
+      borderSubtle: '#330d23',
+      glowColor: 'rgba(219, 39, 119, 0.12)',
+    },
+  },
+
+  carvalho_tabernaculo: {
+    id: 'carvalho_tabernaculo',
+    name: 'Carvalho & Tabernáculo Bíblico',
+    tagline: 'Solidez dos patriarcas, madeira de acácia e santuário',
+    primaryHex: '#92400e',
+    primaryHoverHex: '#78350f',
+    accentHex: '#d97706',
+    sidebarActiveBg: 'bg-amber-800 text-white font-bold shadow-md shadow-amber-800/20',
+    sidebarAccentText: 'text-amber-400',
+    btnPrimary: 'bg-amber-800 hover:bg-amber-700 text-white font-bold',
+    btnSecondary: 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900',
+    bannerGradient: 'from-slate-950 via-amber-950 to-slate-900',
+    bannerAccentBadge: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
+    badgeBg: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900',
+    textAccent: 'text-amber-700 dark:text-amber-400',
+    borderAccent: 'border-amber-600',
+    ringColor: 'ring-amber-500/30',
+    cardHighlight: 'border-amber-200/80 bg-amber-50/40 dark:border-amber-500/30 dark:bg-amber-950/20',
+    darkModeConfig: {
+      bgBase: '#0a0603',
+      bgCard: '#150c07',
+      bgSurface: '#22130b',
+      borderColor: '#3d2214',
+      borderSubtle: '#2c180e',
+      glowColor: 'rgba(146, 64, 14, 0.12)',
+    },
+  },
+
+  turquesa_aguas: {
+    id: 'turquesa_aguas',
+    name: 'Turquesa & Águas de Repouso',
+    tagline: 'Salmo 23, refrigério à alma e águas vivas e serenas',
+    primaryHex: '#0d9488',
+    primaryHoverHex: '#0f766e',
+    accentHex: '#2dd4bf',
+    sidebarActiveBg: 'bg-teal-600 text-white font-bold shadow-md shadow-teal-600/20',
+    sidebarAccentText: 'text-teal-400',
+    btnPrimary: 'bg-teal-600 hover:bg-teal-500 text-white font-bold',
+    btnSecondary: 'bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900',
+    bannerGradient: 'from-slate-950 via-teal-950 to-slate-900',
+    bannerAccentBadge: 'bg-teal-500/20 text-teal-300 border-teal-400/30',
+    badgeBg: 'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900',
+    textAccent: 'text-teal-600 dark:text-teal-400',
+    borderAccent: 'border-teal-500',
+    ringColor: 'ring-teal-400/30',
+    cardHighlight: 'border-teal-200/80 bg-teal-50/40 dark:border-teal-500/30 dark:bg-teal-950/20',
+    darkModeConfig: {
+      bgBase: '#030b0a',
+      bgCard: '#061715',
+      bgSurface: '#0c2724',
+      borderColor: '#14433e',
+      borderSubtle: '#0e2f2b',
+      glowColor: 'rgba(13, 148, 136, 0.12)',
+    },
+  },
+
   onix_moderno: {
     id: 'onix_moderno',
     name: 'Ônix & Grafite Contemporâneo',
@@ -133,25 +416,14 @@ export const platformThemes: Record<PlatformThemeId, PlatformTheme> = {
     borderAccent: 'border-slate-500',
     ringColor: 'ring-slate-400/30',
     cardHighlight: 'border-slate-300 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-900/40',
-  },
-  personalizado: {
-    id: 'personalizado',
-    name: 'Cor Personalizada',
-    tagline: 'Paleta sob medida para a sua congregação',
-    primaryHex: '#f59e0b',
-    primaryHoverHex: '#d97706',
-    accentHex: '#fbbf24',
-    sidebarActiveBg: 'bg-slate-800 text-white font-bold shadow-md shadow-black/20',
-    sidebarAccentText: 'text-amber-300',
-    btnPrimary: 'text-white font-bold shadow-sm',
-    btnSecondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700',
-    bannerGradient: 'from-slate-950 via-slate-900 to-slate-950',
-    bannerAccentBadge: 'bg-white/20 text-white border-white/30',
-    badgeBg: 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
-    textAccent: 'text-slate-800 dark:text-slate-200',
-    borderAccent: 'border-slate-500',
-    ringColor: 'ring-slate-400/30',
-    cardHighlight: 'border-slate-300 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-900/40',
+    darkModeConfig: {
+      bgBase: '#020617',
+      bgCard: '#0b1120',
+      bgSurface: '#151e32',
+      borderColor: '#243049',
+      borderSubtle: '#1b2438',
+      glowColor: 'rgba(148, 163, 184, 0.08)',
+    },
   },
 };
 
@@ -162,6 +434,7 @@ export const getPlatformTheme = (
   if (themeId === 'personalizado' && customColors?.primary) {
     const primary = customColors.primary;
     const accent = customColors.accent || primary;
+    const calculatedDarkMode = generateDarkModeConfig(primary);
     return {
       id: 'personalizado',
       name: 'Cor Personalizada da Igreja',
@@ -180,6 +453,7 @@ export const getPlatformTheme = (
       borderAccent: 'border-slate-500',
       ringColor: 'ring-slate-400/30',
       cardHighlight: 'border-slate-300 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-900/40',
+      darkModeConfig: calculatedDarkMode,
     };
   }
 

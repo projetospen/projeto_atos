@@ -186,8 +186,24 @@ export type PlatformThemeId =
   | 'esmeralda_vida'
   | 'purpura_nobre'
   | 'oceano_profundo'
+  | 'vinho_alianca'
+  | 'bronze_altar'
+  | 'indigo_santuario'
+  | 'oliva_getsemani'
+  | 'rosa_shekinah'
+  | 'carvalho_tabernaculo'
+  | 'turquesa_aguas'
   | 'onix_moderno'
   | 'personalizado';
+
+export interface ThemeDarkModeConfig {
+  bgBase: string;       // Deep page background for dark mode (e.g. #0c0a06)
+  bgCard: string;       // Elevated card/container background for dark mode (e.g. #17130b)
+  bgSurface: string;    // Inner surface/dropdown/hover background (e.g. #231d10)
+  borderColor: string;  // Card/element borders in dark mode (e.g. #382e18)
+  borderSubtle: string; // Subtle divider lines (e.g. #282010)
+  glowColor: string;    // Soft ambient glow
+}
 
 export interface PlatformTheme {
   id: PlatformThemeId;
@@ -207,6 +223,7 @@ export interface PlatformTheme {
   borderAccent: string;
   ringColor: string;
   cardHighlight: string;
+  darkModeConfig: ThemeDarkModeConfig;
 }
 
 export interface ChurchProfile {

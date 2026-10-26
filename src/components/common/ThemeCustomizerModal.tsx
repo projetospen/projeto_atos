@@ -110,14 +110,14 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
       id: 'dourado_real' as PlatformThemeId, 
       name: 'Dourado Real & Âmbar', 
       hex: '#f59e0b', 
-      desc: 'Solenidade e reverência clássica (Padrão)',
+      desc: 'Solenidade, nobreza e iluminação espiritual (Padrão)',
       symbol: '👑'
     },
     { 
       id: 'azul_celestial' as PlatformThemeId, 
       name: 'Azul Celestial & Marinho', 
       hex: '#2563eb', 
-      desc: 'Tradição, fé, serenidade e harmonia',
+      desc: 'Tradição, reverência, fé e serenidade clássica',
       symbol: '⛪'
     },
     { 
@@ -136,23 +136,72 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
     },
     { 
       id: 'purpura_nobre' as PlatformThemeId, 
-      name: 'Púrpura Real & Majestade', 
+      name: 'Púrpura & Majestade Real', 
       hex: '#7c3aed', 
-      desc: 'Realeza de Cristo, sacerdócio e honra',
+      desc: 'Realeza de Cristo, sacerdócio santo e glória',
       symbol: '✝️'
     },
     { 
       id: 'oceano_profundo' as PlatformThemeId, 
       name: 'Oceano & Ciano da Graça', 
       hex: '#0891b2', 
-      desc: 'Frescor moderno, juventude e águas profundas',
+      desc: 'Frescor contemporâneo, juventude e águas profundas',
       symbol: '🌊'
+    },
+    { 
+      id: 'vinho_alianca' as PlatformThemeId, 
+      name: 'Vinho & Cálice da Aliança', 
+      hex: '#b91c1c', 
+      desc: 'Comunhão da ceia, santa aliança e sangue de Cristo',
+      symbol: '🍷'
+    },
+    { 
+      id: 'bronze_altar' as PlatformThemeId, 
+      name: 'Bronze & Fogo do Altar', 
+      hex: '#ea580c', 
+      desc: 'Altar de adoração ardente, consagração e fervor',
+      symbol: '🕯️'
+    },
+    { 
+      id: 'indigo_santuario' as PlatformThemeId, 
+      name: 'Índigo & Santuário Sagrado', 
+      hex: '#4f46e5', 
+      desc: 'Mistério divino, profundidade bíblica e oração',
+      symbol: '📖'
+    },
+    { 
+      id: 'oliva_getsemani' as PlatformThemeId, 
+      name: 'Verde Oliva & Getsêmani', 
+      hex: '#65a30d', 
+      desc: 'Monte das Oliveiras, paz celestial e unção de vida',
+      symbol: '🕊️'
+    },
+    { 
+      id: 'rosa_shekinah' as PlatformThemeId, 
+      name: 'Rosa Shekinah & Glória', 
+      hex: '#db2777', 
+      desc: 'Rosa de Sarom, júbilo no Espírito e graça resplandecente',
+      symbol: '🌸'
+    },
+    { 
+      id: 'carvalho_tabernaculo' as PlatformThemeId, 
+      name: 'Carvalho & Tabernáculo', 
+      hex: '#92400e', 
+      desc: 'Solidez dos patriarcas, acácia e santuário bíblico',
+      symbol: '🏛️'
+    },
+    { 
+      id: 'turquesa_aguas' as PlatformThemeId, 
+      name: 'Turquesa & Águas de Repouso', 
+      hex: '#0d9488', 
+      desc: 'Salmo 23, águas tranquilas e refrigério da alma',
+      symbol: '💧'
     },
     { 
       id: 'onix_moderno' as PlatformThemeId, 
       name: 'Ônix & Grafite Contemporâneo', 
       hex: '#334155', 
-      desc: 'Design minimalista, sobriedade e elegância',
+      desc: 'Design minimalista, sobriedade, ordem e elegância',
       symbol: '🛡️'
     },
   ];
@@ -186,7 +235,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 Personalizar Paleta de Cores da Igreja
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ajuste a identidade visual e o modo de exibição de todo o sistema
+                14 paletas sagradas com Modo Escuro adaptativo personalizado
               </p>
             </div>
           </div>
@@ -200,16 +249,51 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           </button>
         </div>
 
-        {/* Live Preview Bar - Matching EmblemCustomizerModal style */}
-        <div className="p-5 sm:p-6 bg-slate-950 text-white flex flex-col items-center justify-center relative overflow-hidden border-b border-slate-800">
+        {/* Live Preview Bar - Adapts to chosen theme AND selected color mode */}
+        <div 
+          className="p-5 sm:p-6 text-white flex flex-col items-center justify-center relative overflow-hidden border-b transition-colors duration-300"
+          style={{
+            backgroundColor: activeColorMode === 'dark' 
+              ? currentComputedTheme.darkModeConfig.bgBase 
+              : '#0f172a',
+            borderColor: activeColorMode === 'dark' 
+              ? currentComputedTheme.darkModeConfig.borderColor 
+              : '#1e293b',
+          }}
+        >
           <div className="relative z-10 flex flex-col items-center w-full">
-            <span className="text-[10px] uppercase font-bold text-slate-400 mb-2.5 tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" style={{ color: previewPrimaryHex }} />
-              <span>Pré-visualização ao Vivo na Barra Lateral & Cabeçalho</span>
-            </span>
+            <div className="flex items-center justify-between w-full max-w-md mb-2">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" style={{ color: previewPrimaryHex }} />
+                <span>Pré-visualização do Sistema</span>
+              </span>
+              <span 
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all"
+                style={{
+                  backgroundColor: activeColorMode === 'dark' ? `${previewPrimaryHex}20` : '#ffffff15',
+                  color: previewPrimaryHex,
+                  borderColor: `${previewPrimaryHex}40`
+                }}
+              >
+                {activeColorMode === 'dark' ? 'Modo Escuro Ativo' : 'Modo Claro Ativo'}
+              </span>
+            </div>
 
             {/* Emblem and Branding Preview Card */}
-            <div className="w-full max-w-md p-3.5 bg-slate-900/90 rounded-2xl border border-slate-800 flex flex-col gap-3 shadow-xl">
+            <div 
+              className="w-full max-w-md p-3.5 rounded-2xl flex flex-col gap-3 shadow-xl transition-all duration-300"
+              style={{
+                backgroundColor: activeColorMode === 'dark' 
+                  ? currentComputedTheme.darkModeConfig.bgCard 
+                  : '#1e293b',
+                borderColor: activeColorMode === 'dark' 
+                  ? currentComputedTheme.darkModeConfig.borderColor 
+                  : '#334155',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                boxShadow: `0 10px 25px -5px ${currentComputedTheme.darkModeConfig.glowColor}`
+              }}
+            >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <ChurchEmblemRenderer 
@@ -228,7 +312,18 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                       >
                         ATOS
                       </span>
-                      <span className="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded font-semibold border border-slate-700/80">
+                      <span 
+                        className="text-[9px] px-1.5 py-0.2 rounded font-semibold border"
+                        style={{
+                          backgroundColor: activeColorMode === 'dark' 
+                            ? currentComputedTheme.darkModeConfig.bgSurface 
+                            : '#0f172a',
+                          borderColor: activeColorMode === 'dark' 
+                            ? currentComputedTheme.darkModeConfig.borderSubtle 
+                            : '#334155',
+                          color: '#cbd5e1'
+                        }}
+                      >
                         ADMIN
                       </span>
                     </div>
@@ -247,11 +342,16 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               </div>
 
               {/* Sample Active Menu Pill */}
-              <div className="flex items-center justify-between pt-2.5 border-t border-slate-800/80 text-xs">
+              <div 
+                className="flex items-center justify-between pt-2.5 text-xs"
+                style={{
+                  borderTop: `1px solid ${activeColorMode === 'dark' ? currentComputedTheme.darkModeConfig.borderSubtle : '#334155'}`
+                }}
+              >
                 <div 
                   className="flex items-center gap-2 px-3 py-1 rounded-xl font-bold transition-all"
                   style={{ 
-                    backgroundColor: `${previewPrimaryHex}20`, 
+                    backgroundColor: `${previewPrimaryHex}22`, 
                     color: previewPrimaryHex 
                   }}
                 >
@@ -263,10 +363,15 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                  <span>Modo:</span>
-                  <span className="font-semibold text-slate-200">
-                    {activeColorMode === 'dark' ? '🌙 Escuro' : '☀️ Claro'}
-                  </span>
+                  <span>Tom Escuro:</span>
+                  <span 
+                    className="w-3.5 h-3.5 rounded-full inline-block border" 
+                    style={{ 
+                      backgroundColor: currentComputedTheme.darkModeConfig.bgCard,
+                      borderColor: currentComputedTheme.darkModeConfig.borderColor
+                    }}
+                    title={`Tom de fundo do modo escuro: ${currentComputedTheme.darkModeConfig.bgCard}`}
+                  />
                 </div>
               </div>
             </div>
@@ -286,9 +391,14 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           
           {/* Section 1: Modo Claro e Modo Escuro */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-2">
-              1. Modo de Exibição da Plataforma
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="font-bold text-slate-700 dark:text-slate-200">
+                1. Modo de Exibição da Plataforma
+              </label>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                O Modo Escuro adapta seus tons de fundo à paleta ativa
+              </span>
+            </div>
             <div className="grid grid-cols-2 gap-2.5">
               {/* Light Mode Button */}
               <button
@@ -343,12 +453,18 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
 
           {/* Section 2: Paletas Eclesiásticas Selecionáveis */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-2">
-              2. Paletas Eclesiásticas Prontas
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="font-bold text-slate-700 dark:text-slate-200">
+                2. Paletas Eclesiásticas Prontas ({churchThemeList.length} Opções)
+              </label>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Clique para ativar instantaneamente
+              </span>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {churchThemeList.map(item => {
                 const isSelected = !isCustomMode && activeThemeId === item.id;
+                const itemTheme = platformThemes[item.id as Exclude<PlatformThemeId, 'personalizado'>];
                 return (
                   <button
                     key={item.id}
@@ -364,11 +480,21 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                         : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <div 
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white shrink-0 shadow-xs font-bold"
-                      style={{ backgroundColor: item.hex }}
-                    >
-                      <div className="w-2.5 h-2.5 rounded-full bg-white/90" />
+                    {/* Primary Color & Dark Tone dual badge */}
+                    <div className="relative shrink-0">
+                      <div 
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-xs font-bold"
+                        style={{ backgroundColor: item.hex }}
+                        title={`Cor Primária: ${item.hex}`}
+                      >
+                        <span className="text-xs">{item.symbol}</span>
+                      </div>
+                      {/* Dark tone dot indicator */}
+                      <span 
+                        className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border border-white dark:border-slate-900 shadow-2xs"
+                        style={{ backgroundColor: itemTheme?.darkModeConfig.bgCard || '#000000' }}
+                        title={`Tom escuro adaptado correspondente`}
+                      />
                     </div>
 
                     <div className="min-w-0 flex-1">

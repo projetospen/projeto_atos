@@ -574,6 +574,16 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     root.style.setProperty('--color-primary', theme.primaryHex);
     root.style.setProperty('--color-primary-hover', theme.primaryHoverHex);
     root.style.setProperty('--color-accent', theme.accentHex);
+
+    // Apply palette-specific dark mode colors
+    if (theme.darkModeConfig) {
+      root.style.setProperty('--theme-dark-bg-base', theme.darkModeConfig.bgBase);
+      root.style.setProperty('--theme-dark-bg-card', theme.darkModeConfig.bgCard);
+      root.style.setProperty('--theme-dark-bg-surface', theme.darkModeConfig.bgSurface);
+      root.style.setProperty('--theme-dark-border', theme.darkModeConfig.borderColor);
+      root.style.setProperty('--theme-dark-border-subtle', theme.darkModeConfig.borderSubtle);
+      root.style.setProperty('--theme-dark-glow', theme.darkModeConfig.glowColor);
+    }
   }, [theme]);
 
   // Synchronize colorMode class on <html> element

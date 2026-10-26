@@ -6,6 +6,12 @@
   --color-primary: #f59e0b;
   --color-primary-hover: #d97706;
   --color-accent: #fbbf24;
+  --theme-dark-bg-base: #0b0905;
+  --theme-dark-bg-card: #151108;
+  --theme-dark-bg-surface: #211a0c;
+  --theme-dark-border: #392d15;
+  --theme-dark-border-subtle: #281f0e;
+  --theme-dark-glow: rgba(245, 158, 11, 0.12);
 }
 
 @layer base {
@@ -25,6 +31,72 @@
     border-color: var(--color-primary) !important;
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent) !important;
   }
+}
+
+/* Palette-adaptive Dark Mode Mapping */
+html.dark {
+  background-color: var(--theme-dark-bg-base);
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: var(--theme-dark-bg-base) !important;
+}
+
+html.dark aside {
+  background-color: var(--theme-dark-bg-card) !important;
+  border-color: var(--theme-dark-border) !important;
+}
+
+html.dark header {
+  background-color: color-mix(in srgb, var(--theme-dark-bg-card) 95%, transparent) !important;
+  border-color: var(--theme-dark-border) !important;
+}
+
+html.dark .dark\:bg-slate-950 {
+  background-color: var(--theme-dark-bg-base) !important;
+}
+
+html.dark .dark\:bg-slate-900 {
+  background-color: var(--theme-dark-bg-card) !important;
+}
+
+html.dark .dark\:bg-slate-900\/95,
+html.dark .dark\:bg-slate-900\/90,
+html.dark .dark\:bg-slate-900\/80,
+html.dark .dark\:bg-slate-900\/60,
+html.dark .dark\:bg-slate-900\/50,
+html.dark .dark\:bg-slate-900\/40 {
+  background-color: color-mix(in srgb, var(--theme-dark-bg-card) 92%, transparent) !important;
+}
+
+html.dark .dark\:bg-slate-800 {
+  background-color: var(--theme-dark-bg-surface) !important;
+}
+
+html.dark .dark\:bg-slate-800\/90,
+html.dark .dark\:bg-slate-800\/80,
+html.dark .dark\:bg-slate-800\/70,
+html.dark .dark\:bg-slate-800\/60,
+html.dark .dark\:bg-slate-800\/50,
+html.dark .dark\:bg-slate-800\/40,
+html.dark .dark\:bg-slate-800\/30 {
+  background-color: color-mix(in srgb, var(--theme-dark-bg-surface) 80%, transparent) !important;
+}
+
+html.dark .dark\:border-slate-800,
+html.dark .dark\:border-slate-800\/80,
+html.dark .dark\:border-slate-800\/60,
+html.dark .dark\:border-slate-800\/50 {
+  border-color: var(--theme-dark-border) !important;
+}
+
+html.dark .dark\:border-slate-700,
+html.dark .dark\:border-slate-700\/80,
+html.dark .dark\:border-slate-700\/70,
+html.dark .dark\:border-slate-700\/60,
+html.dark .dark\:border-slate-700\/50 {
+  border-color: var(--theme-dark-border-subtle) !important;
 }
 
 /* Hide scrollbar utility */
