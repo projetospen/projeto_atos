@@ -6,6 +6,10 @@ import {
   VolunteerDuty, 
   FinancialTransaction, 
   ChurchProfile,
+  ChurchModulesConfig,
+  RoleModulesConfig,
+  DEFAULT_CHURCH_MODULES,
+  DEFAULT_ROLE_MODULES,
   PlatformTheme,
   PlatformThemeId,
   ColorMode,
@@ -13,7 +17,10 @@ import {
   AdminRole,
   NavTab,
   ROLE_PERMISSIONS,
-  isTabAllowed
+  isTabAllowed,
+  isAdminRole,
+  isModuleActiveForRole,
+  getRoleModuleConfig
 } from '../types';
 import { getPlatformTheme } from '../data/themeConfig';
 import { 
@@ -27,8 +34,8 @@ import {
 } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-export type { AdminRole, UserAccount, NavTab } from '../types';
-export { ROLE_PERMISSIONS, isTabAllowed } from '../types';
+export type { AdminRole, UserAccount, NavTab, ChurchModulesConfig, RoleModulesConfig } from '../types';
+export { ROLE_PERMISSIONS, isTabAllowed, isAdminRole, isModuleActiveForRole, getRoleModuleConfig } from '../types';
 
 interface ChurchContextType {
   // Navigation & Role
@@ -36,7 +43,8 @@ interface ChurchContextType {
   setActiveTab: (tab: NavTab) => void;
   adminRole: AdminRole;
   setAdminRole: (role: AdminRole) => void;
-  isTabAllowed: (tab: NavTab) => boolean;
+  isTabAllowed: (tab: NavTab, targetRole?: AdminRole) => boolean;
+  isAdmin: boolean;
   isSupabaseConnected: boolean;
 
   // Authentication & Current User
@@ -47,9 +55,13 @@ interface ChurchContextType {
   logout: () => Promise<void>;
   updateCurrentUser: (updates: Partial<UserAccount>) => void;
   
-  // Data & Branding
+  // Data & Branding & Modules
   churchProfile: ChurchProfile;
   updateChurchProfile: (profile: ChurchProfile) => void;
+  toggleModule: (moduleKey: keyof ChurchModulesConfig, enabled?: boolean) => void;
+  toggleRoleModule: (role: AdminRole, moduleKey: keyof ChurchModulesConfig, enabled?: boolean) => void;
+  setRoleModules: (role: AdminRole, modules: ChurchModulesConfig) => void;
+  resetRoleModules: (role?: AdminRole) => void;
   uploadChurchIcon: (imageUrl: string) => void;
   theme: PlatformTheme;
   setThemeId: (themeId: PlatformThemeId, customColors?: { primary?: string; accent?: string }) => void;
@@ -110,16 +122,60 @@ const STORAGE_KEYS = {
   ROLE: 'eclesia_admin_role_v1',
   COLOR_MODE: 'atos_color_mode_v1',
   AUTH_USER: 'atos_auth_user_v1',
+  ACCOUNTS: 'atos_accounts_v2',
+  USER_THEMES: 'atos_user_themes_map_v2',
+};
+
+// Per-profile theme storage helper
+const getStoredUserTheme = (userId: string) => {
+  try {
+    const map = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_THEMES) || '{}');
+    return map[userId] || null;
+  } catch {
+    return null;
+  }
+};
+
+const saveStoredUserTheme = (userId: string, data: {
+  themeId?: PlatformThemeId;
+  customPrimaryColor?: string;
+  customAccentColor?: string;
+  colorMode?: ColorMode;
+}) => {
+  try {
+    const map = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_THEMES) || '{}');
+    map[userId] = { ...map[userId], ...data };
+    localStorage.setItem(STORAGE_KEYS.USER_THEMES, JSON.stringify(map));
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [availableAccounts, setAvailableAccounts] = useState<UserAccount[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) { console.error(e); }
+    }
+    return defaultAccounts;
+  });
+
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
     if (saved === 'logged_out') return null;
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+      try { 
+        const user: UserAccount = JSON.parse(saved);
+        const storedTheme = getStoredUserTheme(user.id);
+        return storedTheme ? { ...user, ...storedTheme } : user;
+      } catch (e) { console.error(e); }
     }
-    return defaultAccounts[0]; // Pr. Marcos Vinicius
+    const initialUser = defaultAccounts[0]; // Pr. Marcos Vinicius
+    const storedTheme = getStoredUserTheme(initialUser.id);
+    return storedTheme ? { ...initialUser, ...storedTheme } : initialUser;
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -136,18 +192,54 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return ROLE_PERMISSIONS[role]?.defaultTab || 'dashboard';
   });
 
-  const checkIsTabAllowed = (tab: NavTab) => {
-    return isTabAllowed(adminRole, tab);
+  const [churchProfile, setChurchProfile] = useState<ChurchProfile>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
+    if (saved) {
+      try { 
+        const parsed = JSON.parse(saved);
+        return {
+          ...initialChurchProfile,
+          ...parsed,
+          enabledModules: {
+            ...DEFAULT_CHURCH_MODULES,
+            ...(parsed?.enabledModules || {})
+          },
+          roleModulesConfig: {
+            ...DEFAULT_ROLE_MODULES,
+            ...(parsed?.roleModulesConfig || {})
+          }
+        };
+      } catch (e) { console.error(e); }
+    }
+    return initialChurchProfile;
+  });
+
+  const activeUserRole = currentUser?.role || adminRole;
+  const isAdmin = isAdminRole(activeUserRole);
+
+  const checkIsTabAllowed = (tab: NavTab, targetRole?: AdminRole): boolean => {
+    const role = targetRole || currentUser?.role || adminRole;
+    return isTabAllowed(role, tab, churchProfile);
   };
 
   const setActiveTab = (tab: NavTab) => {
-    if (isTabAllowed(adminRole, tab)) {
+    if (checkIsTabAllowed(tab)) {
       setActiveTabState(tab);
     } else {
-      const fallback = ROLE_PERMISSIONS[adminRole]?.defaultTab || 'membros';
-      setActiveTabState(fallback);
+      const role = currentUser?.role || adminRole;
+      const fallback = ROLE_PERMISSIONS[role]?.defaultTab || 'membros';
+      setActiveTabState(checkIsTabAllowed(fallback) ? fallback : 'membros');
     }
   };
+
+  // Auto fallback to 'membros' if current active tab is not allowed for this profile or church
+  useEffect(() => {
+    if (!checkIsTabAllowed(activeTab)) {
+      const role = currentUser?.role || adminRole;
+      const defaultTab = ROLE_PERMISSIONS[role]?.defaultTab || 'membros';
+      setActiveTabState(checkIsTabAllowed(defaultTab) ? defaultTab : 'membros');
+    }
+  }, [churchProfile?.enabledModules, churchProfile?.roleModulesConfig, activeTab, currentUser?.role, adminRole]);
 
   const setAdminRole = (role: AdminRole) => {
     setAdminRoleState(role);
@@ -163,18 +255,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setCurrentUser(updated);
       localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
     }
-    if (!isTabAllowed(role, activeTab)) {
+    if (!checkIsTabAllowed(activeTab)) {
       setActiveTabState(ROLE_PERMISSIONS[role]?.defaultTab || 'membros');
     }
   };
-
-  const [churchProfile, setChurchProfile] = useState<ChurchProfile>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
-    }
-    return initialChurchProfile;
-  });
 
   const [colorMode, setColorModeState] = useState<ColorMode>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.COLOR_MODE);
@@ -306,15 +390,13 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(STORAGE_KEYS.ROLE, adminRole);
   }, [adminRole]);
 
-  // Available Accounts & Authentication
-  const availableAccounts = defaultAccounts;
-
+  // Authentication & Session Management
   const login = async (email: string, password?: string, targetAccount?: UserAccount): Promise<boolean> => {
     let userToSet: UserAccount;
     if (targetAccount) {
       userToSet = targetAccount;
     } else {
-      const matched = defaultAccounts.find(a => a.email.toLowerCase() === email.trim().toLowerCase());
+      const matched = availableAccounts.find(a => a.email.toLowerCase() === email.trim().toLowerCase());
       if (matched) {
         userToSet = matched;
       } else {
@@ -328,8 +410,16 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           name: formattedName || 'Membro Administrativo',
           email: email.trim(),
           role: 'Administrador Geral',
+          themeId: 'dourado_real',
+          colorMode: 'light'
         };
       }
+    }
+
+    // Merge any stored personal theme preference for this profile ID
+    const personalTheme = getStoredUserTheme(userToSet.id);
+    if (personalTheme) {
+      userToSet = { ...userToSet, ...personalTheme };
     }
 
     if (isSupabaseConfigured && supabase && password) {
@@ -341,6 +431,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             name: data.user.user_metadata?.name || userToSet.name,
             email: data.user.email || email,
             role: (data.user.user_metadata?.role as AdminRole) || userToSet.role,
+            themeId: userToSet.themeId,
+            colorMode: userToSet.colorMode
           };
         }
       } catch (err) {
@@ -354,10 +446,15 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(STORAGE_KEYS.ROLE, userToSet.role);
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(userToSet));
 
+    // Instantly activate this user's individual colorMode
+    if (userToSet.colorMode) {
+      setColorModeState(userToSet.colorMode);
+    }
+
     // Ensure tab switches to allowed default tab for this profile
-    const allowed = ROLE_PERMISSIONS[userToSet.role]?.allowedTabs || [];
-    if (!allowed.includes(activeTab)) {
-      setActiveTabState(ROLE_PERMISSIONS[userToSet.role]?.defaultTab || 'membros');
+    if (!isTabAllowed(userToSet.role, activeTab, churchProfile)) {
+      const defaultTab = ROLE_PERMISSIONS[userToSet.role]?.defaultTab || 'membros';
+      setActiveTabState(isTabAllowed(userToSet.role, defaultTab, churchProfile) ? defaultTab : 'membros');
     }
     return true;
   };
@@ -373,6 +470,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCurrentUser(null);
     setIsAuthenticated(false);
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, 'logged_out');
+    // Revert to dark mode for login portal
+    setColorModeState('dark');
   };
 
   const updateCurrentUser = (updates: Partial<UserAccount>) => {
@@ -380,6 +479,21 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const updated = { ...currentUser, ...updates };
     setCurrentUser(updated);
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
+
+    setAvailableAccounts(prev => {
+      const next = prev.map(acc => acc.id === currentUser.id ? updated : acc);
+      localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(next));
+      return next;
+    });
+
+    if (updates.themeId || updates.customPrimaryColor || updates.customAccentColor || updates.colorMode) {
+      saveStoredUserTheme(currentUser.id, {
+        themeId: updates.themeId || currentUser.themeId,
+        customPrimaryColor: updates.customPrimaryColor || currentUser.customPrimaryColor,
+        customAccentColor: updates.customAccentColor || currentUser.customAccentColor,
+        colorMode: updates.colorMode || currentUser.colorMode,
+      });
+    }
   };
 
   const uploadChurchIcon = (imageUrl: string) => {
@@ -517,6 +631,66 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setChurchProfile(profile);
   };
 
+  const toggleModule = (moduleKey: keyof ChurchModulesConfig, enabled?: boolean) => {
+    setChurchProfile(prev => {
+      const currentModules = prev.enabledModules || DEFAULT_CHURCH_MODULES;
+      const nextVal = enabled !== undefined ? enabled : !currentModules[moduleKey];
+      return {
+        ...prev,
+        enabledModules: {
+          ...currentModules,
+          [moduleKey]: nextVal,
+        }
+      };
+    });
+  };
+
+  const toggleRoleModule = (role: AdminRole, moduleKey: keyof ChurchModulesConfig, enabled?: boolean) => {
+    setChurchProfile(prev => {
+      const currentRoleConfigs = prev.roleModulesConfig || DEFAULT_ROLE_MODULES;
+      const currentRoleMod = currentRoleConfigs[role] || DEFAULT_ROLE_MODULES[role] || DEFAULT_CHURCH_MODULES;
+      const nextVal = enabled !== undefined ? enabled : !currentRoleMod[moduleKey];
+      return {
+        ...prev,
+        roleModulesConfig: {
+          ...currentRoleConfigs,
+          [role]: {
+            ...currentRoleMod,
+            [moduleKey]: nextVal,
+          }
+        }
+      };
+    });
+  };
+
+  const setRoleModules = (role: AdminRole, modules: ChurchModulesConfig) => {
+    setChurchProfile(prev => ({
+      ...prev,
+      roleModulesConfig: {
+        ...(prev.roleModulesConfig || DEFAULT_ROLE_MODULES),
+        [role]: modules,
+      }
+    }));
+  };
+
+  const resetRoleModules = (role?: AdminRole) => {
+    setChurchProfile(prev => {
+      if (role) {
+        return {
+          ...prev,
+          roleModulesConfig: {
+            ...(prev.roleModulesConfig || DEFAULT_ROLE_MODULES),
+            [role]: { ...DEFAULT_ROLE_MODULES[role] },
+          }
+        };
+      }
+      return {
+        ...prev,
+        roleModulesConfig: { ...DEFAULT_ROLE_MODULES }
+      };
+    });
+  };
+
   // Backup & Restore
   const exportBackup = () => {
     const data = {
@@ -563,10 +737,13 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setTransactions(initialTransactions);
   };
 
-  const theme = getPlatformTheme(churchProfile.themeId, {
-    primary: churchProfile.customPrimaryColor,
-    accent: churchProfile.customAccentColor,
-  });
+  const activeThemeId = currentUser?.themeId || churchProfile.themeId || 'dourado_real';
+  const activeCustomColors = {
+    primary: currentUser?.customPrimaryColor || churchProfile.customPrimaryColor,
+    accent: currentUser?.customAccentColor || churchProfile.customAccentColor,
+  };
+
+  const theme = getPlatformTheme(activeThemeId, activeCustomColors);
 
   // Apply CSS variables dynamically to :root for fluid theme transitions
   useEffect(() => {
@@ -598,6 +775,22 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const setColorMode = (mode: ColorMode) => {
     setColorModeState(mode);
+    if (currentUser) {
+      const updatedUser: UserAccount = {
+        ...currentUser,
+        colorMode: mode,
+      };
+      setCurrentUser(updatedUser);
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+
+      setAvailableAccounts(prev => {
+        const next = prev.map(acc => acc.id === currentUser.id ? updatedUser : acc);
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(next));
+        return next;
+      });
+
+      saveStoredUserTheme(currentUser.id, { colorMode: mode });
+    }
     setChurchProfile(prev => ({ ...prev, colorMode: mode }));
   };
 
@@ -609,6 +802,29 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     themeId: PlatformThemeId, 
     customColors?: { primary?: string; accent?: string }
   ) => {
+    if (currentUser) {
+      const updatedUser: UserAccount = {
+        ...currentUser,
+        themeId,
+        customPrimaryColor: customColors?.primary ?? currentUser.customPrimaryColor,
+        customAccentColor: customColors?.accent ?? currentUser.customAccentColor,
+      };
+      setCurrentUser(updatedUser);
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+
+      setAvailableAccounts(prev => {
+        const next = prev.map(acc => acc.id === currentUser.id ? updatedUser : acc);
+        localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(next));
+        return next;
+      });
+
+      saveStoredUserTheme(currentUser.id, {
+        themeId,
+        customPrimaryColor: customColors?.primary ?? currentUser.customPrimaryColor,
+        customAccentColor: customColors?.accent ?? currentUser.customAccentColor,
+      });
+    }
+
     setChurchProfile(prev => ({
       ...prev,
       themeId,
@@ -625,6 +841,7 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         adminRole,
         setAdminRole,
         isTabAllowed: checkIsTabAllowed,
+        isAdmin,
         isSupabaseConnected,
         currentUser,
         isAuthenticated,
@@ -634,6 +851,10 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateCurrentUser,
         churchProfile,
         updateChurchProfile,
+        toggleModule,
+        toggleRoleModule,
+        setRoleModules,
+        resetRoleModules,
         uploadChurchIcon,
         theme,
         setThemeId,

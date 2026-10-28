@@ -4,6 +4,7 @@ import { ChurchProfile, ROLE_PERMISSIONS } from '../../types';
 import { ChurchEmblemRenderer } from '../common/ChurchEmblemRenderer';
 import { EmblemCustomizerModal } from '../common/EmblemCustomizerModal';
 import { ThemeCustomizerModal } from '../common/ThemeCustomizerModal';
+import { ModulePermissionsCustomizer } from './ModulePermissionsCustomizer';
 import { 
   Settings, 
   Church, 
@@ -13,22 +14,24 @@ import {
   RefreshCw, 
   CheckCircle2, 
   AlertTriangle,
-  Building2,
   ShieldCheck,
-  CreditCard,
   Palette,
-  Sparkles,
-  Sun,
-  Moon,
-  LogOut,
+  Camera,
   UserCheck,
-  Camera
+  Moon,
+  Sun,
+  LogOut
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const { 
     churchProfile, 
     updateChurchProfile, 
+    toggleModule,
+    toggleRoleModule,
+    setRoleModules,
+    resetRoleModules,
+    isAdmin,
     uploadChurchIcon,
     exportBackup, 
     importBackup, 
@@ -144,20 +147,33 @@ export const SettingsView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Church Identity Form */}
-        <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div className="flex items-center gap-2">
-              <Church className="w-5 h-5 text-amber-500" />
-              <h3 className="font-bold text-slate-800 dark:text-white text-base">Identificação Oficial da Igreja</h3>
+        {/* Left: Modules Customization & Church Identity */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Section: Personalização de Módulos & Permissões por Perfil */}
+          <ModulePermissionsCustomizer
+            churchProfile={churchProfile}
+            theme={theme}
+            isAdmin={isAdmin}
+            toggleModule={toggleModule}
+            toggleRoleModule={toggleRoleModule}
+            setRoleModules={setRoleModules}
+            resetRoleModules={resetRoleModules}
+          />
+
+          {/* Card 2: Identificação Oficial da Igreja */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Church className="w-5 h-5 text-amber-500" />
+                <h3 className="font-bold text-slate-800 dark:text-white text-base">Identificação Oficial da Igreja</h3>
+              </div>
+              {savedSuccess && (
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 px-2.5 py-1 rounded-full">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Salvo com sucesso!</span>
+                </span>
+              )}
             </div>
-            {savedSuccess && (
-              <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 px-2.5 py-1 rounded-full">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Salvo com sucesso!</span>
-              </span>
-            )}
-          </div>
 
           <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
             {/* Emblem Customization Card */}
@@ -224,7 +240,7 @@ export const SettingsView: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Tema do Sistema</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Paleta do Perfil</span>
                     <span 
                       className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: `${theme.primaryHex}20`, color: theme.primaryHex }}
@@ -238,7 +254,7 @@ export const SettingsView: React.FC = () => {
                   </div>
                   <h4 className="font-bold text-sm text-slate-800 dark:text-white">{theme.tagline}</h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Altere as cores de destaque e alterne entre modo claro ou escuro com fluidez em uma janela pop-up.
+                    A paleta e o modo escuro são personalizados e salvos individualmente para o perfil de <strong>{currentUser?.name || 'seu usuário'}</strong>.
                   </p>
                 </div>
               </div>
@@ -422,6 +438,7 @@ export const SettingsView: React.FC = () => {
             </div>
           </form>
         </div>
+      </div>
 
         {/* Right: Backup & System Maintenance */}
         <div className="lg:col-span-4 space-y-6">

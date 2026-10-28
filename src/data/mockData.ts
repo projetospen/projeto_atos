@@ -1,4 +1,13 @@
-import { ChurchProfile, Department, Member, ChurchEvent, VolunteerDuty, FinancialTransaction, UserAccount } from '../types';
+import { 
+  ChurchProfile, 
+  Department, 
+  Member, 
+  ChurchEvent, 
+  VolunteerDuty, 
+  FinancialTransaction, 
+  UserAccount,
+  DEFAULT_ROLE_MODULES
+} from '../types';
 
 export const initialChurchProfile: ChurchProfile = {
   name: "Comunidade Evangélica Graça & Paz",
@@ -24,6 +33,13 @@ export const initialChurchProfile: ChurchProfile = {
   mottoVerse: "Atos 2:42 - 'E perseveravam na doutrina dos apóstolos, e na comunhão, e no partir do pão, e nas orações.'",
   socialInstagram: "@igrejagracaepaz",
   bankPixKey: "18.394.201/0001-44 (CNPJ)",
+  enabledModules: {
+    financial: true,
+    schedules: true,
+    departments: true,
+    events: true,
+  },
+  roleModulesConfig: DEFAULT_ROLE_MODULES,
 };
 
 export const initialDepartments: Department[] = [
@@ -788,28 +804,36 @@ export const defaultAccounts: UserAccount[] = [
     name: "Pr. Marcos Vinícius de Oliveira",
     email: "pastor@gracaepaz.org.br",
     role: "Pastor Presidente",
-    phone: "(11) 98765-4321"
+    phone: "(11) 98765-4321",
+    themeId: "dourado_real",
+    colorMode: "light"
   },
   {
     id: "usr-2",
     name: "Ester Alencar Ribeiro",
     email: "secretaria@gracaepaz.org.br",
     role: "Secretaria Eclesiástica",
-    phone: "(11) 98765-1122"
+    phone: "(11) 98765-1122",
+    themeId: "purpura_nobre",
+    colorMode: "light"
   },
   {
     id: "usr-3",
     name: "Dc. Carlos Alberto Mendes",
     email: "tesouraria@gracaepaz.org.br",
     role: "Tesouraria",
-    phone: "(11) 98765-3344"
+    phone: "(11) 98765-3344",
+    themeId: "esmeralda_vida",
+    colorMode: "light"
   },
   {
     id: "usr-4",
     name: "Administrador do Sistema",
     email: "admin@atosigrejas.com.br",
     role: "Administrador Geral",
-    phone: "(11) 98765-9988"
+    phone: "(11) 98765-9988",
+    themeId: "azul_celestial",
+    colorMode: "dark"
   },
   {
     id: "usr-5",
@@ -818,7 +842,9 @@ export const defaultAccounts: UserAccount[] = [
     role: "Líder de Ministério",
     phone: "(11) 98765-5566",
     departmentId: "dep-1",
-    departmentName: "Ministério de Louvor & Adoração"
+    departmentName: "Ministério de Louvor & Adoração",
+    themeId: "bronze_altar",
+    colorMode: "dark"
   },
   {
     id: "usr-6",
@@ -827,7 +853,9 @@ export const defaultAccounts: UserAccount[] = [
     role: "Líder de Ministério",
     phone: "(11) 98765-7788",
     departmentId: "dep-3",
-    departmentName: "ATOS Kids (Infantil)"
+    departmentName: "ATOS Kids (Infantil)",
+    themeId: "turquesa_aguas",
+    colorMode: "light"
   },
   {
     id: "usr-7",
@@ -836,7 +864,9 @@ export const defaultAccounts: UserAccount[] = [
     role: "Líder de Ministério",
     phone: "(11) 98765-8899",
     departmentId: "dep-4",
-    departmentName: "Rede de Jovens (Geração Eleita)"
+    departmentName: "Rede de Jovens (Geração Eleita)",
+    themeId: "rubi_fogo",
+    colorMode: "dark"
   }
 ];
 

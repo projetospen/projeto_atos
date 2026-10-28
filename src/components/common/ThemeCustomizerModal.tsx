@@ -32,34 +32,34 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
     colorMode, 
     setColorMode,
     isThemeModalOpen,
-    closeThemeModal
+    closeThemeModal,
+    currentUser
   } = useChurch();
 
   const isModalOpen = propsIsOpen !== undefined ? propsIsOpen : isThemeModalOpen;
   const handleClose = propsOnClose || closeThemeModal;
 
-  const [activeThemeId, setActiveThemeId] = useState<PlatformThemeId>(
-    churchProfile.themeId || 'dourado_real'
-  );
-  const [activeColorMode, setActiveColorMode] = useState<ColorMode>(
-    colorMode || 'light'
-  );
-  const [customHex, setCustomHex] = useState(
-    churchProfile.customPrimaryColor || theme.primaryHex || '#f59e0b'
-  );
-  const [isCustomMode, setIsCustomMode] = useState(
-    churchProfile.themeId === 'personalizado'
-  );
+  const initialUserThemeId = currentUser?.themeId || churchProfile.themeId || 'dourado_real';
+  const initialUserColorMode = currentUser?.colorMode || colorMode || 'light';
+  const initialUserHex = currentUser?.customPrimaryColor || churchProfile.customPrimaryColor || theme.primaryHex || '#f59e0b';
 
-  // Sync state whenever modal opens or churchProfile updates
+  const [activeThemeId, setActiveThemeId] = useState<PlatformThemeId>(initialUserThemeId);
+  const [activeColorMode, setActiveColorMode] = useState<ColorMode>(initialUserColorMode);
+  const [customHex, setCustomHex] = useState(initialUserHex);
+  const [isCustomMode, setIsCustomMode] = useState(initialUserThemeId === 'personalizado');
+
+  // Sync state whenever modal opens or currentUser/churchProfile updates
   React.useEffect(() => {
     if (isModalOpen) {
-      setActiveThemeId(churchProfile.themeId || 'dourado_real');
-      setActiveColorMode(colorMode || 'light');
-      setCustomHex(churchProfile.customPrimaryColor || theme.primaryHex || '#f59e0b');
-      setIsCustomMode(churchProfile.themeId === 'personalizado');
+      const currentTheme = currentUser?.themeId || churchProfile.themeId || 'dourado_real';
+      const currentMode = currentUser?.colorMode || colorMode || 'light';
+      const currentHex = currentUser?.customPrimaryColor || churchProfile.customPrimaryColor || theme.primaryHex || '#f59e0b';
+      setActiveThemeId(currentTheme);
+      setActiveColorMode(currentMode);
+      setCustomHex(currentHex);
+      setIsCustomMode(currentTheme === 'personalizado');
     }
-  }, [isModalOpen, churchProfile, colorMode, theme]);
+  }, [isModalOpen, currentUser, churchProfile, colorMode, theme]);
 
   if (!isModalOpen) return null;
 
@@ -231,11 +231,16 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               <Palette className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 dark:text-white text-base leading-snug">
-                Personalizar Paleta de Cores da Igreja
-              </h3>
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-bold text-slate-800 dark:text-white text-base leading-snug">
+                  Paleta de Cores do Perfil
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  Individual
+                </span>
+              </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                14 paletas sagradas com Modo Escuro adaptativo personalizado
+                Personalizando para <strong className="text-slate-700 dark:text-slate-200">{currentUser?.name || churchProfile.seniorPastor}</strong> ({currentUser?.role || 'Acesso Eclesiástico'})
               </p>
             </div>
           </div>

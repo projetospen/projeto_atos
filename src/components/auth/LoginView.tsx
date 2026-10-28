@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useChurch } from '../../context/ChurchContext';
 import { UserAccount, ROLE_PERMISSIONS } from '../../types';
+import { getPlatformTheme } from '../../data/themeConfig';
 import { ChurchEmblemRenderer } from '../common/ChurchEmblemRenderer';
 import { 
   ShieldCheck, 
@@ -11,7 +12,8 @@ import {
   Sparkles, 
   ChevronRight,
   Database,
-  Building2
+  Building2,
+  Palette
 } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
@@ -156,6 +158,10 @@ export const LoginView: React.FC = () => {
               <div className="space-y-2 max-h-80 overflow-y-auto no-scrollbar pr-0.5">
                 {availableAccounts.map(account => {
                   const permConfig = ROLE_PERMISSIONS[account.role];
+                  const accountTheme = getPlatformTheme(account.themeId, {
+                    primary: account.customPrimaryColor,
+                    accent: account.customAccentColor,
+                  });
                   return (
                     <button
                       key={account.id}
@@ -165,29 +171,46 @@ export const LoginView: React.FC = () => {
                       className="w-full p-3 rounded-2xl bg-slate-950/70 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 flex items-center justify-between transition-all group cursor-pointer text-left disabled:opacity-50"
                     >
                       <div className="flex items-center gap-3 min-w-0">
+                        {/* Avatar with account's own individual theme color */}
                         <div 
-                          className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border border-slate-700/60"
-                          style={{ backgroundColor: `${theme.primaryHex}20`, color: theme.primaryHex }}
+                          className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border border-slate-700/60 shadow-xs relative"
+                          style={{ backgroundColor: `${accountTheme.primaryHex}25`, color: accountTheme.primaryHex }}
                         >
                           {account.name.split(' ')[1]?.charAt(0) || account.name.charAt(0)}
+                          <span 
+                            className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border border-slate-900" 
+                            style={{ backgroundColor: accountTheme.primaryHex }}
+                            title={`Paleta individual: ${accountTheme.name}`}
+                          />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-slate-200 group-hover:text-white truncate">
                             {account.name}
                           </p>
                           <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <span className="font-semibold" style={{ color: theme.primaryHex }}>
+                            <span className="font-semibold" style={{ color: accountTheme.primaryHex }}>
                               {account.role}
                             </span>
                             <span>•</span>
                             <span className="truncate">{account.email}</span>
                           </p>
-                          {/* Authorized Scope Pill */}
-                          <div className="mt-1 flex items-center gap-1.5">
+                          {/* Authorized Scope & Theme Pills */}
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800/80 font-medium">
                               {account.departmentName 
                                 ? `${account.departmentName} & Calendário` 
                                 : permConfig?.scopeLabel}
+                            </span>
+                            <span 
+                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded border flex items-center gap-1"
+                              style={{
+                                backgroundColor: `${accountTheme.primaryHex}15`,
+                                color: accountTheme.primaryHex,
+                                borderColor: `${accountTheme.primaryHex}30`
+                              }}
+                            >
+                              <span>{account.colorMode === 'dark' ? '🌙' : '☀️'}</span>
+                              <span>{accountTheme.name.split('&')[0].trim()}</span>
                             </span>
                           </div>
                         </div>

@@ -226,6 +226,55 @@ export interface PlatformTheme {
   darkModeConfig: ThemeDarkModeConfig;
 }
 
+export interface ChurchModulesConfig {
+  financial: boolean;     // Módulo Financeiro (Dízimos e Despesas)
+  schedules: boolean;     // Módulo de Escalas de Voluntários
+  departments: boolean;   // Módulo de Departamentos e Ministérios
+  events: boolean;        // Módulo de Calendário de Eventos
+}
+
+export const DEFAULT_CHURCH_MODULES: ChurchModulesConfig = {
+  financial: true,
+  schedules: true,
+  departments: true,
+  events: true,
+};
+
+export type RoleModulesConfig = Record<AdminRole, ChurchModulesConfig>;
+
+export const DEFAULT_ROLE_MODULES: Record<AdminRole, ChurchModulesConfig> = {
+  'Pastor Presidente': {
+    financial: true,
+    schedules: true,
+    departments: true,
+    events: true,
+  },
+  'Administrador Geral': {
+    financial: true,
+    schedules: true,
+    departments: true,
+    events: true,
+  },
+  'Secretaria Eclesiástica': {
+    financial: false,
+    schedules: true,
+    departments: true,
+    events: true,
+  },
+  'Tesouraria': {
+    financial: true,
+    schedules: false,
+    departments: false,
+    events: false,
+  },
+  'Líder de Ministério': {
+    financial: false,
+    schedules: true,
+    departments: true,
+    events: true,
+  },
+};
+
 export interface ChurchProfile {
   name: string;
   subtitle: string;
@@ -247,6 +296,8 @@ export interface ChurchProfile {
   mottoVerse: string;
   socialInstagram?: string;
   bankPixKey?: string;
+  enabledModules?: ChurchModulesConfig;
+  roleModulesConfig?: Record<AdminRole, ChurchModulesConfig>;
 }
 
 export type NavTab = 
@@ -275,6 +326,10 @@ export interface UserAccount {
   avatarUrl?: string;
   departmentId?: string; // ID of the specific department for Ministry Leaders
   departmentName?: string;
+  themeId?: PlatformThemeId;
+  customPrimaryColor?: string;
+  customAccentColor?: string;
+  colorMode?: ColorMode;
 }
 
 export interface RolePermissionConfig {
@@ -317,7 +372,62 @@ export const ROLE_PERMISSIONS: Record<AdminRole, RolePermissionConfig> = {
   },
 };
 
-export const isTabAllowed = (role: AdminRole, tab: NavTab): boolean => {
+export const isAdminRole = (role: AdminRole): boolean => {
+  return role === 'Pastor Presidente' || role === 'Administrador Geral';
+};
+
+export const getRoleModuleConfig = (
+  churchProfile: ChurchProfile | undefined, 
+  role: AdminRole
+): ChurchModulesConfig => {
+  return {
+    ...(DEFAULT_ROLE_MODULES[role] || DEFAULT_CHURCH_MODULES),
+    ...(churchProfile?.roleModulesConfig?.[role] || {})
+  };
+};
+
+export const isModuleActiveForRole = (
+  churchProfile: ChurchProfile | undefined,
+  role: AdminRole,
+  moduleKey: keyof ChurchModulesConfig
+): boolean => {
+  // Administrador Geral e Pastor Presidente têm sempre acesso irrestrito a todos os módulos
+  if (isAdminRole(role)) {
+    return true;
+  }
+
+  // 1. Church-wide master switch must be enabled
+  const churchModules = churchProfile?.enabledModules ?? DEFAULT_CHURCH_MODULES;
+  if (churchModules[moduleKey] === false) return false;
+
+  // 2. Profile-specific switch configured by administrator
+  const roleConfig = getRoleModuleConfig(churchProfile, role);
+  return roleConfig[moduleKey] !== false;
+};
+
+export const isTabAllowed = (
+  role: AdminRole, 
+  tab: NavTab, 
+  churchProfile?: ChurchProfile
+): boolean => {
+  // 1. Administrador Geral e Pastor Presidente têm acesso total e irrestrito a TODOS os módulos
+  if (isAdminRole(role)) {
+    return true;
+  }
+
+  // 2. Módulo de Membros & Secretaria é permanente e acessível para todos os perfis
+  if (tab === 'membros') return true;
+
+  // 3. Configurações é exclusivo para Administradores
+  if (tab === 'configuracoes') return false;
+
+  // 4. Módulos configuráveis pelo Administrador para os demais perfis
+  if (tab === 'financeiro') return isModuleActiveForRole(churchProfile, role, 'financial');
+  if (tab === 'escalas') return isModuleActiveForRole(churchProfile, role, 'schedules');
+  if (tab === 'departamentos') return isModuleActiveForRole(churchProfile, role, 'departments');
+  if (tab === 'calendario') return isModuleActiveForRole(churchProfile, role, 'events');
+
+  // 5. Para abas fixas de navegação (dashboard, relatorios), verificar permissão do perfil
   const config = ROLE_PERMISSIONS[role];
   if (!config) return false;
   return config.allowedTabs.includes(tab);

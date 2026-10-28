@@ -33,7 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     theme,
     currentUser,
     logout,
-    adminRole
+    adminRole,
+    isTabAllowed
   } = useChurch();
   const [isEmblemModalOpen, setIsEmblemModalOpen] = useState(false);
 
@@ -66,14 +67,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { id: 'configuracoes', label: 'Configurações', icon: Settings },
   ];
 
-  // Restrict menu items strictly to the permissions of the current role
-  const roleConfig = ROLE_PERMISSIONS[adminRole];
-  const allowedTabs = roleConfig ? roleConfig.allowedTabs : ['dashboard'];
+  const currentRole = currentUser?.role || adminRole;
 
+  // Filter menu items strictly by church master switch and administrator profile module configuration
   const menuItems = allMenuItems
-    .filter(item => allowedTabs.includes(item.id))
+    .filter(item => isTabAllowed(item.id))
     .map(item => {
-      if (item.id === 'departamentos' && adminRole === 'Líder de Ministério') {
+      if (item.id === 'departamentos' && currentRole === 'Líder de Ministério') {
         return {
           ...item,
           label: currentUser?.departmentName ? `Meu Ministério` : 'Meu Departamento',
