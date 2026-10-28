@@ -44,10 +44,11 @@ const AppContent: React.FC = () => {
   // Auto-redirect if on a tab not allowed for current role
   React.useEffect(() => {
     if (isAuthenticated && !isTabAllowed(activeTab)) {
-      const allowedDefault = ROLE_PERMISSIONS[adminRole]?.defaultTab || 'membros';
-      setActiveTab(allowedDefault);
+      const userRole = currentUser?.role || adminRole;
+      const allowedDefault = ROLE_PERMISSIONS[userRole]?.defaultTab || 'dashboard';
+      setActiveTab(isTabAllowed(allowedDefault) ? allowedDefault : 'membros');
     }
-  }, [adminRole, activeTab, isAuthenticated]);
+  }, [adminRole, currentUser?.role, activeTab, isAuthenticated, churchProfile?.roleModulesConfig, churchProfile?.enabledModules]);
 
   // If not logged in, present ecclesiastical login screen so another account can sign in
   if (!isAuthenticated) {

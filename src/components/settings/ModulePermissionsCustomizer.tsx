@@ -3,11 +3,14 @@ import {
   ChurchProfile, 
   ChurchModulesConfig, 
   AdminRole, 
+  RoleDefinition,
   DEFAULT_CHURCH_MODULES, 
   DEFAULT_ROLE_MODULES,
   PlatformTheme,
   isAdminRole
 } from '../../types';
+import { useChurch } from '../../context/ChurchContext';
+import { RoleEditorModal } from './RoleEditorModal';
 import { 
   Boxes, 
   Users, 
@@ -22,11 +25,20 @@ import {
   Table, 
   Layers, 
   RotateCcw, 
-  Check, 
   ShieldCheck,
-  ShieldAlert,
   CheckCheck,
-  Unlock
+  Plus,
+  Pencil,
+  Trash2,
+  BookOpen,
+  Video,
+  Music,
+  Heart,
+  Sparkles,
+  Star,
+  Mic,
+  Shield,
+  AlertCircle
 } from 'lucide-react';
 
 interface ModulePermissionsCustomizerProps {
@@ -39,50 +51,29 @@ interface ModulePermissionsCustomizerProps {
   resetRoleModules: (role?: AdminRole) => void;
 }
 
-const ALL_ROLES: AdminRole[] = [
-  'Pastor Presidente',
-  'Administrador Geral',
-  'Secretaria Eclesiástica',
-  'Tesouraria',
-  'Líder de Ministério'
-];
+const ICON_MAP: Record<string, React.ElementType> = {
+  Crown,
+  ShieldCheck,
+  Users,
+  CircleDollarSign,
+  Building2,
+  BookOpen,
+  Video,
+  Music,
+  Heart,
+  Sparkles,
+  Star,
+  ClipboardList,
+  CalendarDays,
+  Mic,
+  Shield,
+};
 
-const ROLE_DETAILS: Record<AdminRole, { title: string; subtitle: string; icon: React.ElementType; badge: string; color: string }> = {
-  'Pastor Presidente': {
-    title: 'Pastor Presidente',
-    subtitle: 'Direção Geral, Conselho Pastoral e Gestão Ministerial Plena (Acesso Total)',
-    icon: Crown,
-    badge: 'Liderança Pastoral',
-    color: 'from-amber-500 to-amber-600',
-  },
-  'Administrador Geral': {
-    title: 'Administrador Geral',
-    subtitle: 'Gestão Completa da Plataforma, Módulos, Segurança e Cadastros (Acesso Total)',
-    icon: ShieldCheck,
-    badge: 'Administração Geral',
-    color: 'from-blue-600 to-indigo-700',
-  },
-  'Secretaria Eclesiástica': {
-    title: 'Secretaria Eclesiástica',
-    subtitle: 'Cadastro Geral de Membros, Fichas de Batismo, Atas e Carteirinhas',
-    icon: Users,
-    badge: 'Secretaria & Membresia',
-    color: 'from-cyan-600 to-teal-700',
-  },
-  'Tesouraria': {
-    title: 'Tesouraria',
-    subtitle: 'Entradas de Dízimos, Ofertas, Saídas, Livro Caixa e Relatórios',
-    icon: CircleDollarSign,
-    badge: 'Gestão Contábil',
-    color: 'from-emerald-600 to-green-700',
-  },
-  'Líder de Ministério': {
-    title: 'Líder de Ministério',
-    subtitle: 'Gestão Departamental (Louvor, Diaconia, Jovens, Kids, Mídia...)',
-    icon: Building2,
-    badge: 'Coordenação Departamental',
-    color: 'from-orange-500 to-rose-600',
-  },
+const getRoleIcon = (iconName?: string): React.ElementType => {
+  if (iconName && ICON_MAP[iconName]) {
+    return ICON_MAP[iconName];
+  }
+  return Users;
 };
 
 export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerProps> = ({
@@ -94,16 +85,33 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
   setRoleModules,
   resetRoleModules,
 }) => {
+  const { 
+    roles, 
+    addRole, 
+    updateRole, 
+    deleteRole, 
+    resetRolesToDefault,
+    availableAccounts 
+  } = useChurch();
+
   const [subTab, setSubTab] = useState<'per_profile' | 'church_wide'>('per_profile');
   const [selectedRole, setSelectedRole] = useState<AdminRole>('Secretaria Eclesiástica');
   const [viewMode, setViewMode] = useState<'cards' | 'matrix'>('cards');
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
+  // Role Editor Modal state
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [roleToEdit, setRoleToEdit] = useState<RoleDefinition | null>(null);
+
   const enabledModules = churchProfile.enabledModules || DEFAULT_CHURCH_MODULES;
+
+  // Ensure selectedRole is valid
+  const currentRoleDef = roles.find(r => r.name === selectedRole) || roles[0];
+  const activeSelectedRole = currentRoleDef ? currentRoleDef.name : selectedRole;
 
   const showFeedback = (msg: string) => {
     setFeedbackMessage(msg);
-    setTimeout(() => setFeedbackMessage(null), 2500);
+    setTimeout(() => setFeedbackMessage(null), 3000);
   };
 
   const getRoleModules = (role: AdminRole): ChurchModulesConfig => {
@@ -147,15 +155,15 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
 
   const handleSetAllRoles = (enable: boolean) => {
     if (!isAdmin) return;
-    ALL_ROLES.forEach(r => {
-      setRoleModules(r, {
+    roles.forEach(r => {
+      setRoleModules(r.name, {
         financial: enable,
         schedules: enable,
         departments: enable,
         events: enable,
       });
     });
-    showFeedback(enable ? 'Todos os módulos liberados para TODOS os 5 perfis!' : 'Módulos opcionais bloqueados para todos os perfis!');
+    showFeedback(enable ? `Todos os módulos liberados para todos os ${roles.length} perfis!` : 'Módulos opcionais bloqueados para todos os perfis!');
   };
 
   const handleSetAllChurchModules = (enable: boolean) => {
@@ -174,9 +182,63 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
 
   const handleResetAll = () => {
     if (!isAdmin) return;
-    if (window.confirm('Tem certeza que deseja restaurar as permissões de módulos padrão de TODOS os perfis de acesso?')) {
+    if (window.confirm('Deseja restaurar as permissões de módulos padrão de TODOS os perfis de acesso?')) {
       resetRoleModules();
-      showFeedback('Todos os perfis foram restaurados para a configuração padrão.');
+      showFeedback('Todos os perfis foram restaurados para a configuração de módulos padrão.');
+    }
+  };
+
+  // Role Creation & Editing Handlers
+  const handleOpenCreateRole = () => {
+    setRoleToEdit(null);
+    setIsRoleModalOpen(true);
+  };
+
+  const handleOpenEditRole = (roleDef: RoleDefinition) => {
+    setRoleToEdit(roleDef);
+    setIsRoleModalOpen(true);
+  };
+
+  const handleSaveRole = (roleData: Omit<RoleDefinition, 'id'>, roleId?: string) => {
+    if (roleId) {
+      updateRole(roleId, roleData);
+      setSelectedRole(roleData.name);
+      showFeedback(`Perfil "${roleData.name}" atualizado com sucesso!`);
+    } else {
+      const created = addRole(roleData);
+      setSelectedRole(created.name);
+      showFeedback(`Novo perfil "${created.name}" criado com sucesso!`);
+    }
+    setIsRoleModalOpen(false);
+  };
+
+  const handleDeleteRole = (roleDef: RoleDefinition) => {
+    if (!isAdmin) return;
+
+    if (roleDef.isSystem) {
+      alert(`O perfil "${roleDef.name}" é um perfil essencial do sistema e não pode ser excluído.`);
+      return;
+    }
+
+    // Check if any accounts use this role
+    const assignedAccounts = availableAccounts.filter(acc => acc.role === roleDef.name);
+    if (assignedAccounts.length > 0) {
+      alert(`Não é possível excluir o perfil "${roleDef.name}" porque existem ${assignedAccounts.length} conta(s) associada(s) a ele (${assignedAccounts.map(a => a.name).join(', ')}). Altere a função desses usuários antes de remover este perfil.`);
+      return;
+    }
+
+    if (window.confirm(`Tem certeza que deseja excluir o perfil "${roleDef.name}"? Esta ação removerá o perfil da plataforma.`)) {
+      const res = deleteRole(roleDef.id);
+      if (res.success) {
+        showFeedback(`Perfil "${roleDef.name}" excluído.`);
+        // Fallback to first role
+        const remaining = roles.filter(r => r.id !== roleDef.id);
+        if (remaining.length > 0) {
+          setSelectedRole(remaining[0].name);
+        }
+      } else {
+        alert(res.message || 'Erro ao excluir perfil');
+      }
     }
   };
 
@@ -191,7 +253,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <div 
             className="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0"
@@ -201,7 +263,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
           </div>
           <div>
             <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2">
-              <span>Personalização de Módulos & Acesso</span>
+              <span>Personalização de Módulos & Perfis</span>
               {isAdmin && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
                   <Crown className="w-3 h-3" />
@@ -210,45 +272,60 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
               )}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Defina quais ferramentas estão disponíveis para cada perfil de usuário ou para toda a congregação
+              Crie e edite perfis de acesso, e defina quais ferramentas estão disponíveis para cada perfil ou para toda a congregação
             </p>
           </div>
         </div>
 
-        {/* View Switcher Tabs */}
-        <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 self-start sm:self-center">
-          <button
-            type="button"
-            onClick={() => setSubTab('per_profile')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              subTab === 'per_profile'
-                ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
-            }`}
-            style={subTab === 'per_profile' ? { color: theme.primaryHex } : undefined}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Por Perfil de Usuário</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSubTab('church_wide')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              subTab === 'church_wide'
-                ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
-            }`}
-            style={subTab === 'church_wide' ? { color: theme.primaryHex } : undefined}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Geral da Igreja ({activeModulesCount}/5)</span>
-          </button>
+        {/* View Switcher Tabs & Create Button */}
+        <div className="flex flex-wrap items-center gap-2 self-start lg:self-center">
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={handleOpenCreateRole}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 hover:opacity-95"
+              style={{ backgroundColor: theme.primaryHex }}
+              title="Criar um novo tipo de perfil de acesso"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Novo Perfil</span>
+            </button>
+          )}
+
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60">
+            <button
+              type="button"
+              onClick={() => setSubTab('per_profile')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                subTab === 'per_profile'
+                  ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+              }`}
+              style={subTab === 'per_profile' ? { color: theme.primaryHex } : undefined}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Por Perfil ({roles.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSubTab('church_wide')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                subTab === 'church_wide'
+                  ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+              }`}
+              style={subTab === 'church_wide' ? { color: theme.primaryHex } : undefined}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Geral da Igreja ({activeModulesCount}/5)</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Floating feedback message */}
       {feedbackMessage && (
-        <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
+        <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span className="font-semibold">{feedbackMessage}</span>
@@ -263,30 +340,32 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
       {subTab === 'per_profile' && (
         <div className="space-y-5">
           {/* Status info bar */}
-          <div className={`p-3.5 rounded-xl border flex items-start gap-3 text-xs leading-relaxed ${
+          <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs leading-relaxed ${
             isAdmin 
               ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-300'
               : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
           }`}>
-            {isAdmin ? (
-              <Crown className="w-4 h-4 mt-0.5 shrink-0" style={{ color: theme.primaryHex }} />
-            ) : (
-              <Lock className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
-            )}
-            <div className="flex-1">
+            <div className="flex items-start gap-3 flex-1">
               {isAdmin ? (
-                <p>
-                  <strong>Gestão de Permissões por Perfil:</strong> Como administrador, defina quais ferramentas cada perfil de acesso pode visualizar e utilizar. As alterações entram em vigor imediatamente para todos os usuários desse perfil.
-                </p>
+                <Crown className="w-4 h-4 mt-0.5 shrink-0" style={{ color: theme.primaryHex }} />
               ) : (
-                <p>
-                  <strong>Visualização de Leitura:</strong> Apenas administradores do sistema e o Pastor Presidente possuem permissão para modificar as permissões dos perfis.
-                </p>
+                <Lock className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
               )}
+              <p>
+                {isAdmin ? (
+                  <>
+                    <strong>Gerenciador de Perfis de Acesso:</strong> Você pode <strong>criar novos perfis</strong>, editar nomes, ícones, cores e permissões, ou definir quais ferramentas cada perfil pode acessar.
+                  </>
+                ) : (
+                  <>
+                    <strong>Visualização de Leitura:</strong> Apenas administradores do sistema e o Pastor Presidente possuem permissão para criar, editar e configurar perfis.
+                  </>
+                )}
+              </p>
             </div>
 
             {/* View Mode Toggle: Cards vs Matrix */}
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0 self-end sm:self-center">
               <button
                 type="button"
                 onClick={() => setViewMode('cards')}
@@ -318,10 +397,9 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
           {viewMode === 'cards' && (
             <div className="space-y-4">
               {/* Role Selector Badges */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                {ALL_ROLES.map((roleKey) => {
-                  const meta = ROLE_DETAILS[roleKey];
-                  const roleMods = getRoleModules(roleKey);
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                {roles.map((roleDef) => {
+                  const roleMods = getRoleModules(roleDef.name);
                   const roleActiveCount = [
                     true, // Membros
                     roleMods.financial !== false && enabledModules.financial !== false,
@@ -329,14 +407,14 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                     roleMods.departments !== false && enabledModules.departments !== false,
                     roleMods.events !== false && enabledModules.events !== false,
                   ].filter(Boolean).length;
-                  const isSelected = selectedRole === roleKey;
-                  const Icon = meta.icon;
+                  const isSelected = activeSelectedRole === roleDef.name;
+                  const Icon = getRoleIcon(roleDef.iconName);
 
                   return (
                     <button
-                      key={roleKey}
+                      key={roleDef.id}
                       type="button"
-                      onClick={() => setSelectedRole(roleKey)}
+                      onClick={() => setSelectedRole(roleDef.name)}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between ${
                         isSelected
                           ? 'bg-white dark:bg-slate-800 shadow-md ring-2'
@@ -357,32 +435,53 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                         >
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          isSelected
-                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                            : 'bg-slate-200/80 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                        }`}>
-                          {roleActiveCount}/5
-                        </span>
+                        <div className="flex items-center gap-1">
+                          {roleDef.isAdmin && (
+                            <span title="Perfil de Administrador">
+                              <Crown className="w-3 h-3 text-amber-500" />
+                            </span>
+                          )}
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isSelected
+                              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                              : 'bg-slate-200/80 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                          }`}>
+                            {roleActiveCount}/5
+                          </span>
+                        </div>
                       </div>
                       <div>
-                        <p className="font-bold text-xs text-slate-800 dark:text-white leading-tight">
-                          {roleKey}
+                        <p className="font-bold text-xs text-slate-800 dark:text-white leading-tight truncate">
+                          {roleDef.name}
                         </p>
                         <span className="text-[10px] text-slate-400 block mt-0.5 truncate">
-                          {meta.badge}
+                          {roleDef.badge}
                         </span>
                       </div>
                     </button>
                   );
                 })}
+
+                {/* Add new role shortcut button */}
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={handleOpenCreateRole}
+                    className="p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 bg-slate-50/40 dark:bg-slate-800/20 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer text-center group min-h-[88px]"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-slate-200/70 dark:bg-slate-800 group-hover:scale-105 transition-transform flex items-center justify-center text-slate-600 dark:text-slate-300">
+                      <Plus className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-semibold">Novo Perfil</span>
+                  </button>
+                )}
               </div>
 
               {/* Selected Role Actions & Module Switch List */}
-              {(() => {
-                const meta = ROLE_DETAILS[selectedRole];
-                const roleMods = getRoleModules(selectedRole);
-                const Icon = meta.icon;
+              {currentRoleDef && (() => {
+                const roleMods = getRoleModules(currentRoleDef.name);
+                const Icon = getRoleIcon(currentRoleDef.iconName);
+                const isRoleAdmin = currentRoleDef.isAdmin || isAdminRole(currentRoleDef.name);
 
                 return (
                   <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-5 shadow-xs">
@@ -398,33 +497,69 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <h4 className="font-bold text-base text-slate-800 dark:text-white">
-                              Perfil: {selectedRole}
+                              Perfil: {currentRoleDef.name}
                             </h4>
                             <span 
                               className="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
                               style={{ backgroundColor: `${theme.primaryHex}15`, color: theme.primaryHex }}
                             >
-                              {meta.badge}
+                              {currentRoleDef.badge}
                             </span>
-                            {isAdminRole(selectedRole) && (
+                            {isRoleAdmin && (
                               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
                                 <Crown className="w-3 h-3" />
-                                Acesso Total Permanente
+                                Acesso Administrativo
+                              </span>
+                            )}
+                            {currentRoleDef.isSystem ? (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5" />
+                                Sistema Base
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/40">
+                                Personalizado
                               </span>
                             )}
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            {meta.subtitle}
+                            {currentRoleDef.subtitle}
                           </p>
                         </div>
                       </div>
 
-                      {/* Quick Presets */}
+                      {/* Role Actions: Edit, Delete, Quick Presets */}
                       {isAdmin && (
                         <div className="flex items-center gap-1.5 flex-wrap self-end sm:self-center">
+                          {/* Edit Profile Button */}
                           <button
                             type="button"
-                            onClick={() => handleSetAllForRole(selectedRole, true)}
+                            onClick={() => handleOpenEditRole(currentRoleDef)}
+                            title="Editar este tipo de perfil (nome, ícone, privilégios, etc.)"
+                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>Editar Perfil</span>
+                          </button>
+
+                          {/* Delete Custom Profile Button */}
+                          {!currentRoleDef.isSystem && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRole(currentRoleDef)}
+                              title="Excluir este perfil personalizado"
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Excluir</span>
+                            </button>
+                          )}
+
+                          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block" />
+
+                          <button
+                            type="button"
+                            onClick={() => handleSetAllForRole(currentRoleDef.name, true)}
                             title="Ativar todos os módulos para este perfil"
                             className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer flex items-center gap-1"
                           >
@@ -433,7 +568,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleSetAllForRole(selectedRole, false)}
+                            onClick={() => handleSetAllForRole(currentRoleDef.name, false)}
                             title="Bloquear todos os módulos opcionais para este perfil"
                             className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-1"
                           >
@@ -442,7 +577,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleResetRole(selectedRole)}
+                            onClick={() => handleResetRole(currentRoleDef.name)}
                             title="Restaurar padrão deste perfil"
                             className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer flex items-center gap-1"
                           >
@@ -453,12 +588,12 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                       )}
                     </div>
 
-                    {/* Admin Profile Full-Access Guaranteed Banner */}
-                    {isAdminRole(selectedRole) && (
+                    {/* Admin Profile Full-Access Banner */}
+                    {isRoleAdmin && (
                       <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
                         <Crown className="w-4 h-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                         <div className="leading-relaxed">
-                          <strong>Acesso Total Irrestrito:</strong> O <strong>{selectedRole}</strong> possui acesso permanente a todos os módulos do sistema (Membros, Financeiro, Escalas, Departamentos, Eventos e Configurações). As opções abaixo permitem aos administradores personalizar e alternar módulos livremente para testes e configurações da igreja.
+                          <strong>Privilégios Administrativos:</strong> O perfil <strong>{currentRoleDef.name}</strong> possui permissão de gestão da plataforma. Ao desativar qualquer módulo para o seu próprio perfil ou globalmente, a ferramenta correspondente será ocultada e ficará sem acesso até que você a ative novamente aqui nas configurações.
                         </div>
                       </div>
                     )}
@@ -492,7 +627,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                           <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            Ativo para {selectedRole}
+                            Ativo para {currentRoleDef.name}
                           </span>
                         </div>
                       </div>
@@ -500,7 +635,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                       {/* 2. Financeiro */}
                       {(() => {
                         const isGloballyDisabled = enabledModules.financial === false;
-                        const isRoleActive = isAdminRole(selectedRole) || (roleMods.financial !== false && !isGloballyDisabled);
+                        const isRoleActive = roleMods.financial !== false && !isGloballyDisabled;
 
                         return (
                           <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -518,9 +653,9 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                       : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600'
                                   }`}>
-                                    {isRoleActive ? `Ativo para ${selectedRole}` : `Oculto para ${selectedRole}`}
+                                    {isRoleActive ? `Ativo para ${currentRoleDef.name}` : `Oculto para ${currentRoleDef.name}`}
                                   </span>
-                                  {isGloballyDisabled && !isAdminRole(selectedRole) && (
+                                  {isGloballyDisabled && (
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                       Desativado no master geral da igreja
                                     </span>
@@ -538,7 +673,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                 role="switch"
                                 disabled={!isAdmin}
                                 aria-checked={roleMods.financial !== false}
-                                onClick={() => handleToggleRoleModule(selectedRole, 'financial')}
+                                onClick={() => handleToggleRoleModule(currentRoleDef.name, 'financial')}
                                 title={!isAdmin ? 'Apenas administradores podem alterar' : 'Alternar módulo financeiro para este perfil'}
                                 className={`
                                   relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent 
@@ -561,10 +696,11 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                           </div>
                         );
                       })()}
+
                       {/* 3. Escalas */}
                       {(() => {
                         const isGloballyDisabled = enabledModules.schedules === false;
-                        const isRoleActive = isAdminRole(selectedRole) || (roleMods.schedules !== false && !isGloballyDisabled);
+                        const isRoleActive = roleMods.schedules !== false && !isGloballyDisabled;
 
                         return (
                           <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -582,9 +718,9 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                       : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600'
                                   }`}>
-                                    {isRoleActive ? `Ativo para ${selectedRole}` : `Oculto para ${selectedRole}`}
+                                    {isRoleActive ? `Ativo para ${currentRoleDef.name}` : `Oculto para ${currentRoleDef.name}`}
                                   </span>
-                                  {isGloballyDisabled && !isAdminRole(selectedRole) && (
+                                  {isGloballyDisabled && (
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                       Desativado no master geral da igreja
                                     </span>
@@ -602,7 +738,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                 role="switch"
                                 disabled={!isAdmin}
                                 aria-checked={roleMods.schedules !== false}
-                                onClick={() => handleToggleRoleModule(selectedRole, 'schedules')}
+                                onClick={() => handleToggleRoleModule(currentRoleDef.name, 'schedules')}
                                 title={!isAdmin ? 'Apenas administradores podem alterar' : 'Alternar módulo de escalas para este perfil'}
                                 className={`
                                   relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent 
@@ -629,7 +765,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                       {/* 4. Departamentos */}
                       {(() => {
                         const isGloballyDisabled = enabledModules.departments === false;
-                        const isRoleActive = isAdminRole(selectedRole) || (roleMods.departments !== false && !isGloballyDisabled);
+                        const isRoleActive = roleMods.departments !== false && !isGloballyDisabled;
 
                         return (
                           <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -647,9 +783,9 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                       : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600'
                                   }`}>
-                                    {isRoleActive ? `Ativo para ${selectedRole}` : `Oculto para ${selectedRole}`}
+                                    {isRoleActive ? `Ativo para ${currentRoleDef.name}` : `Oculto para ${currentRoleDef.name}`}
                                   </span>
-                                  {isGloballyDisabled && !isAdminRole(selectedRole) && (
+                                  {isGloballyDisabled && (
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                       Desativado no master geral da igreja
                                     </span>
@@ -667,7 +803,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                 role="switch"
                                 disabled={!isAdmin}
                                 aria-checked={roleMods.departments !== false}
-                                onClick={() => handleToggleRoleModule(selectedRole, 'departments')}
+                                onClick={() => handleToggleRoleModule(currentRoleDef.name, 'departments')}
                                 title={!isAdmin ? 'Apenas administradores podem alterar' : 'Alternar módulo de departamentos para este perfil'}
                                 className={`
                                   relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent 
@@ -694,7 +830,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                       {/* 5. Calendário */}
                       {(() => {
                         const isGloballyDisabled = enabledModules.events === false;
-                        const isRoleActive = isAdminRole(selectedRole) || (roleMods.events !== false && !isGloballyDisabled);
+                        const isRoleActive = roleMods.events !== false && !isGloballyDisabled;
 
                         return (
                           <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -712,9 +848,9 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                       : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600'
                                   }`}>
-                                    {isRoleActive ? `Ativo para ${selectedRole}` : `Oculto para ${selectedRole}`}
+                                    {isRoleActive ? `Ativo para ${currentRoleDef.name}` : `Oculto para ${currentRoleDef.name}`}
                                   </span>
-                                  {isGloballyDisabled && !isAdminRole(selectedRole) && (
+                                  {isGloballyDisabled && (
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                       Desativado no master geral da igreja
                                     </span>
@@ -732,7 +868,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                 role="switch"
                                 disabled={!isAdmin}
                                 aria-checked={roleMods.events !== false}
-                                onClick={() => handleToggleRoleModule(selectedRole, 'events')}
+                                onClick={() => handleToggleRoleModule(currentRoleDef.name, 'events')}
                                 title={!isAdmin ? 'Apenas administradores podem alterar' : 'Alternar módulo de calendário para este perfil'}
                                 className={`
                                   relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent 
@@ -771,18 +907,27 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                   <div className="flex items-center gap-2">
                     <Table className="w-4 h-4 text-slate-500" />
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                      Ações Rápidas para Todos os 5 Perfis:
+                      Ações Rápidas para Todos os {roles.length} Perfis:
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <button
                       type="button"
+                      onClick={handleOpenCreateRole}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg text-white shadow-xs transition-colors cursor-pointer flex items-center gap-1"
+                      style={{ backgroundColor: theme.primaryHex }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Novo Perfil</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleSetAllRoles(true)}
-                      title="Ativar todos os módulos para todos os 5 perfis"
+                      title="Ativar todos os módulos para todos os perfis"
                       className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer flex items-center gap-1"
                     >
                       <CheckCheck className="w-3.5 h-3.5" />
-                      <span>Liberar Tudo (Todos os Perfis)</span>
+                      <span>Liberar Tudo</span>
                     </button>
                     <button
                       type="button"
@@ -791,7 +936,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                       className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-1"
                     >
                       <Lock className="w-3.5 h-3.5" />
-                      <span>Bloquear Opcionais (Todos)</span>
+                      <span>Bloquear Opcionais</span>
                     </button>
                     <button
                       type="button"
@@ -820,14 +965,13 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
-                    {ALL_ROLES.map((roleKey) => {
-                      const meta = ROLE_DETAILS[roleKey];
-                      const roleMods = getRoleModules(roleKey);
-                      const Icon = meta.icon;
-                      const isRoleAdmin = isAdminRole(roleKey);
+                    {roles.map((roleDef) => {
+                      const roleMods = getRoleModules(roleDef.name);
+                      const Icon = getRoleIcon(roleDef.iconName);
+                      const isRoleAdmin = roleDef.isAdmin || isAdminRole(roleDef.name);
 
                       return (
-                        <tr key={roleKey} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                        <tr key={roleDef.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                           <td className="p-3.5 pl-4">
                             <div className="flex items-center gap-2.5">
                               <div 
@@ -837,18 +981,27 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                 <Icon className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
                                   <p className="font-bold text-slate-800 dark:text-white leading-tight">
-                                    {roleKey}
+                                    {roleDef.name}
                                   </p>
                                   {isRoleAdmin && (
-                                    <span title="Acesso Total Garantido" className="inline-flex">
+                                    <span title="Acesso Administrativo" className="inline-flex">
                                       <Crown className="w-3 h-3 text-amber-500" />
+                                    </span>
+                                  )}
+                                  {roleDef.isSystem ? (
+                                    <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                      Base
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                                      Custom
                                     </span>
                                   )}
                                 </div>
                                 <span className="text-[10px] text-slate-400">
-                                  {meta.badge}
+                                  {roleDef.badge}
                                 </span>
                               </div>
                             </div>
@@ -867,8 +1020,8 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                             <button
                               type="button"
                               disabled={!isAdmin}
-                              onClick={() => handleToggleRoleModule(roleKey, 'financial')}
-                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Financeiro para ${roleKey}`}
+                              onClick={() => handleToggleRoleModule(roleDef.name, 'financial')}
+                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Financeiro para ${roleDef.name}`}
                               className={`
                                 relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent 
                                 transition-colors duration-200 ease-in-out focus:outline-hidden
@@ -892,8 +1045,8 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                             <button
                               type="button"
                               disabled={!isAdmin}
-                              onClick={() => handleToggleRoleModule(roleKey, 'schedules')}
-                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Escalas para ${roleKey}`}
+                              onClick={() => handleToggleRoleModule(roleDef.name, 'schedules')}
+                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Escalas para ${roleDef.name}`}
                               className={`
                                 relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent 
                                 transition-colors duration-200 ease-in-out focus:outline-hidden
@@ -917,8 +1070,8 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                             <button
                               type="button"
                               disabled={!isAdmin}
-                              onClick={() => handleToggleRoleModule(roleKey, 'departments')}
-                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Departamentos para ${roleKey}`}
+                              onClick={() => handleToggleRoleModule(roleDef.name, 'departments')}
+                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Departamentos para ${roleDef.name}`}
                               className={`
                                 relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent 
                                 transition-colors duration-200 ease-in-out focus:outline-hidden
@@ -942,8 +1095,8 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                             <button
                               type="button"
                               disabled={!isAdmin}
-                              onClick={() => handleToggleRoleModule(roleKey, 'events')}
-                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Calendário para ${roleKey}`}
+                              onClick={() => handleToggleRoleModule(roleDef.name, 'events')}
+                              title={!isAdmin ? 'Apenas admin pode alterar' : `Alternar Calendário para ${roleDef.name}`}
                               className={`
                                 relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent 
                                 transition-colors duration-200 ease-in-out focus:outline-hidden
@@ -965,14 +1118,34 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                           {/* Ações */}
                           {isAdmin && (
                             <td className="p-3.5 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleResetRole(roleKey)}
-                                title="Restaurar padrão deste perfil"
-                                className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                              >
-                                <RotateCcw className="w-3.5 h-3.5" />
-                              </button>
+                              <div className="flex items-center justify-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditRole(roleDef)}
+                                  title={`Editar perfil ${roleDef.name}`}
+                                  className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetRole(roleDef.name)}
+                                  title="Restaurar padrão deste perfil"
+                                  className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                </button>
+                                {!roleDef.isSystem && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteRole(roleDef)}
+                                    title={`Excluir perfil ${roleDef.name}`}
+                                    className="p-1 rounded-md text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           )}
                         </tr>
@@ -1283,9 +1456,19 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
       <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
         <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
         <p className="leading-relaxed">
-          <strong>Sincronização Imediata:</strong> As permissões definidas pelo administrador entram em vigor instantaneamente. Usuários logados com seus perfis verão apenas as abas e ferramentas autorizadas para a sua função eclesiástica.
+          <strong>Perfis Flexíveis e Módulos Dinâmicos:</strong> As alterações e criações de perfis entram em vigor imediatamente. Usuários atribuídos a cada perfil terão acesso apenas às abas autorizadas e iniciarão na aba padrão definida para sua função.
         </p>
       </div>
+
+      {/* Role Editor Modal */}
+      <RoleEditorModal
+        isOpen={isRoleModalOpen}
+        onClose={() => setIsRoleModalOpen(false)}
+        roleToEdit={roleToEdit}
+        onSave={handleSaveRole}
+        theme={theme}
+        existingRoleNames={roles.map(r => r.name)}
+      />
     </div>
   );
 };

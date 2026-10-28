@@ -547,7 +547,7 @@ export const SettingsView: React.FC = () => {
                     Cargo: {currentUser?.role || 'Pastor Presidente'}
                   </p>
                   <span className="inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                    {ROLE_PERMISSIONS[currentUser?.role || 'Pastor Presidente']?.scopeLabel}
+                    {ROLE_PERMISSIONS[currentUser?.role || 'Pastor Presidente']?.scopeLabel || 'Acesso Autorizado'}
                   </span>
                 </div>
               </div>

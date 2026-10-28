@@ -6,7 +6,8 @@ import {
   VolunteerDuty, 
   FinancialTransaction, 
   UserAccount,
-  DEFAULT_ROLE_MODULES
+  DEFAULT_ROLE_MODULES,
+  DEFAULT_ROLE_DEFINITIONS
 } from '../types';
 
 export const initialChurchProfile: ChurchProfile = {
@@ -40,6 +41,7 @@ export const initialChurchProfile: ChurchProfile = {
     events: true,
   },
   roleModulesConfig: DEFAULT_ROLE_MODULES,
+  customRoles: DEFAULT_ROLE_DEFINITIONS,
 };
 
 export const initialDepartments: Department[] = [

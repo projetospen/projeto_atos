@@ -10,6 +10,8 @@ import {
   RoleModulesConfig,
   DEFAULT_CHURCH_MODULES,
   DEFAULT_ROLE_MODULES,
+  DEFAULT_ROLE_DEFINITIONS,
+  RoleDefinition,
   PlatformTheme,
   PlatformThemeId,
   ColorMode,
@@ -34,8 +36,8 @@ import {
 } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-export type { AdminRole, UserAccount, NavTab, ChurchModulesConfig, RoleModulesConfig } from '../types';
-export { ROLE_PERMISSIONS, isTabAllowed, isAdminRole, isModuleActiveForRole, getRoleModuleConfig } from '../types';
+export type { AdminRole, UserAccount, NavTab, ChurchModulesConfig, RoleModulesConfig, RoleDefinition } from '../types';
+export { ROLE_PERMISSIONS, isTabAllowed, isAdminRole, isModuleActiveForRole, getRoleModuleConfig, DEFAULT_ROLE_DEFINITIONS } from '../types';
 
 interface ChurchContextType {
   // Navigation & Role
@@ -46,6 +48,14 @@ interface ChurchContextType {
   isTabAllowed: (tab: NavTab, targetRole?: AdminRole) => boolean;
   isAdmin: boolean;
   isSupabaseConnected: boolean;
+
+  // Roles & Permissions Management
+  roles: RoleDefinition[];
+  addRole: (role: Omit<RoleDefinition, 'id'>) => RoleDefinition;
+  updateRole: (roleId: string, updates: Partial<RoleDefinition>) => void;
+  deleteRole: (roleId: string) => { success: boolean; message?: string };
+  resetRolesToDefault: () => void;
+  getRoleDefinition: (roleNameOrId: string) => RoleDefinition | undefined;
 
   // Authentication & Current User
   currentUser: UserAccount | null;
@@ -124,6 +134,7 @@ const STORAGE_KEYS = {
   AUTH_USER: 'atos_auth_user_v1',
   ACCOUNTS: 'atos_accounts_v2',
   USER_THEMES: 'atos_user_themes_map_v2',
+  CUSTOM_ROLES: 'atos_custom_roles_v2',
 };
 
 // Per-profile theme storage helper
@@ -192,6 +203,21 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return ROLE_PERMISSIONS[role]?.defaultTab || 'dashboard';
   });
 
+  const [roles, setRoles] = useState<RoleDefinition[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.CUSTOM_ROLES);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) { console.error(e); }
+    }
+    return DEFAULT_ROLE_DEFINITIONS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_ROLES, JSON.stringify(roles));
+  }, [roles]);
+
   const [churchProfile, setChurchProfile] = useState<ChurchProfile>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
     if (saved) {
@@ -207,7 +233,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           roleModulesConfig: {
             ...DEFAULT_ROLE_MODULES,
             ...(parsed?.roleModulesConfig || {})
-          }
+          },
+          customRoles: parsed?.customRoles || DEFAULT_ROLE_DEFINITIONS
         };
       } catch (e) { console.error(e); }
     }
@@ -215,11 +242,15 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const activeUserRole = currentUser?.role || adminRole;
-  const isAdmin = isAdminRole(activeUserRole);
+  const isAdmin = isAdminRole(activeUserRole, roles);
+
+  const getRoleDefinition = (roleNameOrId: string): RoleDefinition | undefined => {
+    return roles.find(r => r.name === roleNameOrId || r.id === roleNameOrId);
+  };
 
   const checkIsTabAllowed = (tab: NavTab, targetRole?: AdminRole): boolean => {
     const role = targetRole || currentUser?.role || adminRole;
-    return isTabAllowed(role, tab, churchProfile);
+    return isTabAllowed(role, tab, churchProfile, roles);
   };
 
   const setActiveTab = (tab: NavTab) => {
@@ -227,7 +258,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setActiveTabState(tab);
     } else {
       const role = currentUser?.role || adminRole;
-      const fallback = ROLE_PERMISSIONS[role]?.defaultTab || 'membros';
+      const roleDef = getRoleDefinition(role);
+      const fallback = roleDef?.defaultTab || (ROLE_PERMISSIONS as any)[role]?.defaultTab || 'membros';
       setActiveTabState(checkIsTabAllowed(fallback) ? fallback : 'membros');
     }
   };
@@ -236,10 +268,11 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!checkIsTabAllowed(activeTab)) {
       const role = currentUser?.role || adminRole;
-      const defaultTab = ROLE_PERMISSIONS[role]?.defaultTab || 'membros';
+      const roleDef = getRoleDefinition(role);
+      const defaultTab = roleDef?.defaultTab || (ROLE_PERMISSIONS as any)[role]?.defaultTab || 'membros';
       setActiveTabState(checkIsTabAllowed(defaultTab) ? defaultTab : 'membros');
     }
-  }, [churchProfile?.enabledModules, churchProfile?.roleModulesConfig, activeTab, currentUser?.role, adminRole]);
+  }, [churchProfile?.enabledModules, churchProfile?.roleModulesConfig, activeTab, currentUser?.role, adminRole, roles]);
 
   const setAdminRole = (role: AdminRole) => {
     setAdminRoleState(role);
@@ -256,7 +289,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
     }
     if (!checkIsTabAllowed(activeTab)) {
-      setActiveTabState(ROLE_PERMISSIONS[role]?.defaultTab || 'membros');
+      const roleDef = getRoleDefinition(role);
+      setActiveTabState(roleDef?.defaultTab || (ROLE_PERMISSIONS as any)[role]?.defaultTab || 'membros');
     }
   };
 
@@ -661,6 +695,18 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       };
     });
+    setRoles(prevRoles => prevRoles.map(r => {
+      if (r.name === role || r.id === role) {
+        return {
+          ...r,
+          modules: {
+            ...r.modules,
+            [moduleKey]: enabled !== undefined ? enabled : !r.modules[moduleKey]
+          }
+        };
+      }
+      return r;
+    }));
   };
 
   const setRoleModules = (role: AdminRole, modules: ChurchModulesConfig) => {
@@ -671,16 +717,23 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [role]: modules,
       }
     }));
+    setRoles(prevRoles => prevRoles.map(r => {
+      if (r.name === role || r.id === role) {
+        return { ...r, modules };
+      }
+      return r;
+    }));
   };
 
   const resetRoleModules = (role?: AdminRole) => {
     setChurchProfile(prev => {
       if (role) {
+        const def = roles.find(r => r.name === role || r.id === role);
         return {
           ...prev,
           roleModulesConfig: {
             ...(prev.roleModulesConfig || DEFAULT_ROLE_MODULES),
-            [role]: { ...DEFAULT_ROLE_MODULES[role] },
+            [role]: def ? { ...def.modules } : { ...DEFAULT_ROLE_MODULES[role] },
           }
         };
       }
@@ -691,12 +744,141 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
+  // Custom Roles Management
+  const addRole = (newRoleData: Omit<RoleDefinition, 'id'>): RoleDefinition => {
+    const newId = `role-${Date.now()}`;
+    const newRole: RoleDefinition = {
+      ...newRoleData,
+      id: newId,
+      isSystem: false,
+    };
+
+    setRoles(prev => [...prev, newRole]);
+    setChurchProfile(prev => ({
+      ...prev,
+      customRoles: [...(prev.customRoles || DEFAULT_ROLE_DEFINITIONS), newRole],
+      roleModulesConfig: {
+        ...(prev.roleModulesConfig || DEFAULT_ROLE_MODULES),
+        [newRole.name]: newRole.modules,
+      }
+    }));
+    return newRole;
+  };
+
+  const updateRole = (roleId: string, updates: Partial<RoleDefinition>) => {
+    setRoles(prevRoles => {
+      const oldRole = prevRoles.find(r => r.id === roleId);
+      if (!oldRole) return prevRoles;
+
+      const updatedRole: RoleDefinition = { ...oldRole, ...updates };
+
+      // If name changed, update accounts, currentUser and roleModulesConfig
+      if (updates.name && updates.name !== oldRole.name) {
+        const oldName = oldRole.name;
+        const newName = updates.name;
+
+        setAvailableAccounts(prevAccs => {
+          const updatedAccs = prevAccs.map(acc => acc.role === oldName ? { ...acc, role: newName } : acc);
+          localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(updatedAccs));
+          return updatedAccs;
+        });
+
+        if (currentUser && currentUser.role === oldName) {
+          const updatedUser: UserAccount = { ...currentUser, role: newName };
+          setCurrentUser(updatedUser);
+          localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+        }
+
+        setChurchProfile(prevProfile => {
+          const currentConfigs = prevProfile.roleModulesConfig || DEFAULT_ROLE_MODULES;
+          const roleConfig = currentConfigs[oldName] || updatedRole.modules;
+          const { [oldName]: _, ...rest } = currentConfigs;
+          return {
+            ...prevProfile,
+            roleModulesConfig: {
+              ...rest,
+              [newName]: roleConfig
+            }
+          };
+        });
+      }
+
+      if (updates.modules) {
+        setChurchProfile(prevProfile => ({
+          ...prevProfile,
+          roleModulesConfig: {
+            ...(prevProfile.roleModulesConfig || DEFAULT_ROLE_MODULES),
+            [updatedRole.name]: updates.modules!,
+          }
+        }));
+      }
+
+      const nextRoles = prevRoles.map(r => r.id === roleId ? updatedRole : r);
+      setChurchProfile(prevProfile => ({
+        ...prevProfile,
+        customRoles: nextRoles
+      }));
+      return nextRoles;
+    });
+  };
+
+  const deleteRole = (roleId: string): { success: boolean; message?: string } => {
+    const roleToDelete = roles.find(r => r.id === roleId);
+    if (!roleToDelete) {
+      return { success: false, message: 'Perfil não encontrado.' };
+    }
+
+    if (roleToDelete.isSystem || roleToDelete.name === 'Pastor Presidente' || roleToDelete.name === 'Administrador Geral') {
+      return { success: false, message: 'Perfis de sistema essenciais não podem ser excluídos.' };
+    }
+
+    const boundAccounts = availableAccounts.filter(acc => acc.role === roleToDelete.name);
+    if (boundAccounts.length > 0) {
+      return { 
+        success: false, 
+        message: `Não é possível excluir este perfil porque existem ${boundAccounts.length} conta(s) vinculada(s) a ele (${boundAccounts.map(a => a.name).join(', ')}). Altere o perfil dessas contas antes de excluir.` 
+      };
+    }
+
+    if (currentUser?.role === roleToDelete.name) {
+      return {
+        success: false,
+        message: 'Você não pode excluir o perfil com o qual está conectado no momento.'
+      };
+    }
+
+    setRoles(prevRoles => {
+      const nextRoles = prevRoles.filter(r => r.id !== roleId);
+      setChurchProfile(prevProfile => {
+        const { [roleToDelete.name]: _, ...restConfigs } = prevProfile.roleModulesConfig || {};
+        return {
+          ...prevProfile,
+          customRoles: nextRoles,
+          roleModulesConfig: restConfigs as any,
+        };
+      });
+      return nextRoles;
+    });
+
+    return { success: true };
+  };
+
+  const resetRolesToDefault = () => {
+    setRoles(DEFAULT_ROLE_DEFINITIONS);
+    setChurchProfile(prev => ({
+      ...prev,
+      customRoles: DEFAULT_ROLE_DEFINITIONS,
+      roleModulesConfig: DEFAULT_ROLE_MODULES,
+    }));
+  };
+
   // Backup & Restore
   const exportBackup = () => {
     const data = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       churchProfile,
+      roles,
       members,
       departments,
       events,
@@ -716,6 +898,8 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       const data = JSON.parse(jsonString);
       if (data.churchProfile) setChurchProfile(data.churchProfile);
+      if (Array.isArray(data.roles)) setRoles(data.roles);
+      else if (data.churchProfile?.customRoles) setRoles(data.churchProfile.customRoles);
       if (Array.isArray(data.members)) setMembers(data.members);
       if (Array.isArray(data.departments)) setDepartments(data.departments);
       if (Array.isArray(data.events)) setEvents(data.events);
@@ -843,6 +1027,12 @@ export const ChurchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isTabAllowed: checkIsTabAllowed,
         isAdmin,
         isSupabaseConnected,
+        roles,
+        addRole,
+        updateRole,
+        deleteRole,
+        resetRolesToDefault,
+        getRoleDefinition,
         currentUser,
         isAuthenticated,
         availableAccounts,
