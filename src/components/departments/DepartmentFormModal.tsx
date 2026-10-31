@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Department } from '../../types';
 import { useChurch } from '../../context/ChurchContext';
-import { X, Building2, User, Calendar, DollarSign, Save } from 'lucide-react';
+import { X, Building2, User, Calendar, DollarSign, Save, Wallet, ExternalLink } from 'lucide-react';
 
 interface DepartmentFormModalProps {
   department?: Department | null;
@@ -26,9 +26,41 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
     viceLeaderMemberId: department?.viceLeaderMemberId || '',
     meetingSchedule: department?.meetingSchedule || '',
     meetingLocation: department?.meetingLocation || '',
-    monthlyBudget: department?.monthlyBudget || 1000,
+    initialCash: department?.initialCash ?? department?.monthlyBudget ?? 1000,
     goalsText: department?.goals ? department.goals.join('\n') : '',
   });
+
+  useEffect(() => {
+    if (department) {
+      setFormData({
+        name: department.name,
+        slug: department.slug,
+        description: department.description,
+        iconName: department.iconName,
+        color: department.color,
+        leaderMemberId: department.leaderMemberId,
+        viceLeaderMemberId: department.viceLeaderMemberId || '',
+        meetingSchedule: department.meetingSchedule || '',
+        meetingLocation: department.meetingLocation || '',
+        initialCash: department.initialCash ?? department.monthlyBudget ?? 1000,
+        goalsText: department.goals ? department.goals.join('\n') : '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        slug: '',
+        description: '',
+        iconName: 'Church',
+        color: 'from-amber-500 to-orange-600',
+        leaderMemberId: members[0]?.id || '',
+        viceLeaderMemberId: '',
+        meetingSchedule: '',
+        meetingLocation: '',
+        initialCash: 1000,
+        goalsText: '',
+      });
+    }
+  }, [department, isOpen, members]);
 
   if (!isOpen) return null;
 
@@ -41,24 +73,37 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
       .map(g => g.trim())
       .filter(g => g.length > 0);
 
-    const payload = {
-      name: formData.name.trim(),
-      slug: formData.slug.trim() || formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-      description: formData.description.trim(),
-      iconName: formData.iconName,
-      color: formData.color,
-      leaderMemberId: formData.leaderMemberId,
-      viceLeaderMemberId: formData.viceLeaderMemberId || undefined,
-      meetingSchedule: formData.meetingSchedule.trim() || undefined,
-      meetingLocation: formData.meetingLocation.trim() || undefined,
-      monthlyBudget: Number(formData.monthlyBudget),
-      goals: goals.length > 0 ? goals : undefined,
-    };
+    const cashValue = Number(formData.initialCash) || 0;
 
     if (department) {
-      updateDepartment(department.id, payload);
+      // Independent editing: updates only department data, preserves cash
+      updateDepartment(department.id, {
+        name: formData.name.trim(),
+        slug: formData.slug.trim() || formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        description: formData.description.trim(),
+        iconName: formData.iconName,
+        color: formData.color,
+        leaderMemberId: formData.leaderMemberId,
+        viceLeaderMemberId: formData.viceLeaderMemberId || undefined,
+        meetingSchedule: formData.meetingSchedule.trim() || undefined,
+        meetingLocation: formData.meetingLocation.trim() || undefined,
+        goals: goals.length > 0 ? goals : undefined,
+      });
     } else {
-      addDepartment(payload);
+      addDepartment({
+        name: formData.name.trim(),
+        slug: formData.slug.trim() || formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        description: formData.description.trim(),
+        iconName: formData.iconName,
+        color: formData.color,
+        leaderMemberId: formData.leaderMemberId,
+        viceLeaderMemberId: formData.viceLeaderMemberId || undefined,
+        meetingSchedule: formData.meetingSchedule.trim() || undefined,
+        meetingLocation: formData.meetingLocation.trim() || undefined,
+        initialCash: cashValue,
+        monthlyBudget: cashValue,
+        goals: goals.length > 0 ? goals : undefined,
+      });
     }
 
     onClose();
@@ -168,18 +213,8 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Orçamento Mensal Estimado (R$)</label>
-              <input
-                type="number"
-                min="0"
-                value={formData.monthlyBudget}
-                onChange={e => setFormData({ ...formData, monthlyBudget: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
-              />
-            </div>
-
+          {/* Visual Color (and initial cash for new department) */}
+          {department ? (
             <div>
               <label className="block font-bold text-slate-700 mb-1">Tema Visual / Cor</label>
               <select
@@ -192,7 +227,37 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({
                 ))}
               </select>
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Caixa Inicial (Fundo R$)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="10"
+                  value={formData.initialCash}
+                  onChange={e => setFormData({ ...formData, initialCash: parseFloat(e.target.value) || 0 })}
+                  placeholder="Ex: 1000"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Tema Visual / Cor</label>
+                <select
+                  value={formData.color}
+                  onChange={e => setFormData({ ...formData, color: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden"
+                >
+                  {colorOptions.map(c => (
+                    <option key={c.class} value={c.class}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">

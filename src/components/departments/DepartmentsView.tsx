@@ -19,11 +19,16 @@ import {
   HeartHandshake,
   Church,
   Target,
-  ShieldCheck
+  ShieldCheck,
+  Wallet,
+  ArrowDownRight,
+  Receipt,
+  Pencil,
+  Edit3
 } from 'lucide-react';
 
 export const DepartmentsView: React.FC = () => {
-  const { departments, members, theme, adminRole, currentUser } = useChurch();
+  const { departments, members, theme, adminRole, currentUser, transactions } = useChurch();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
@@ -113,8 +118,8 @@ export const DepartmentsView: React.FC = () => {
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {isMinistryLeader
-              ? 'Gestão da sua equipe de voluntários, reuniões e metas ministeriais'
-              : 'Organização dos ministérios, lideranças, escalas de trabalho, voluntários e orçamentos'}
+              ? 'Gestão da sua equipe de voluntários, reuniões, metas e controle de gastos do caixa'
+              : 'Organização dos ministérios, lideranças, escalas de trabalho, voluntários e caixa do departamento com controle de gastos'}
           </p>
         </div>
 
@@ -187,18 +192,68 @@ export const DepartmentsView: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Caixa do Departamento & Controle de Gastos */}
+                  {(() => {
+                    const initialCash = dept.initialCash ?? dept.monthlyBudget ?? 0;
+                    const deptTxs = transactions.filter(t => t.departmentId === dept.id);
+                    const totalEntries = deptTxs.filter(t => t.type === 'entrada').reduce((sum, t) => sum + t.amount, 0);
+                    const totalExpenses = deptTxs.filter(t => t.type === 'saida').reduce((sum, t) => sum + t.amount, 0);
+                    const currentBalance = initialCash + totalEntries - totalExpenses;
+
+                    return (
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/70 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200 text-xs">
+                            <Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            <span>Caixa do Departamento</span>
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span 
+                              onClick={() => setDetailsDept(dept)}
+                              title="Clique para abrir o caixa e cadastrar entradas/saídas"
+                              className={`text-[11px] font-bold px-2 py-0.5 rounded-full cursor-pointer hover:opacity-80 transition-opacity ${
+                                currentBalance >= 0 
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300' 
+                                  : 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'
+                              }`}
+                            >
+                              Saldo: {formatCurrency(currentBalance)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setDetailsDept(dept)}
+                              title="Abrir opções de caixa para cadastrar entradas e saídas de receitas"
+                              className="p-1 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                          <div>
+                            <span className="block text-[9px] uppercase tracking-wider text-slate-400">Gastos Totais</span>
+                            <span className="font-semibold text-rose-600 dark:text-rose-400">
+                              {formatCurrency(totalExpenses)}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="block text-[9px] uppercase tracking-wider text-slate-400">Fundo Base</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">
+                              {formatCurrency(initialCash)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Details metadata */}
-                  <div className="space-y-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                  <div className="space-y-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
                     {dept.meetingSchedule && (
                       <p className="flex items-center gap-1.5 truncate">
                         <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{dept.meetingSchedule}</span>
-                      </p>
-                    )}
-                    {dept.monthlyBudget && (
-                      <p className="flex items-center gap-1.5">
-                        <DollarSign className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>Fundo Mensal: <strong className="text-slate-700 dark:text-slate-200">{formatCurrency(dept.monthlyBudget)}</strong></span>
                       </p>
                     )}
                   </div>
@@ -222,21 +277,15 @@ export const DepartmentsView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Bottom footer button */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              {/* Bottom footer button: only Editar departamento */}
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-start">
                 <button
                   onClick={() => handleOpenEdit(dept)}
-                  className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1 cursor-pointer"
+                  title="Editar informações gerais, liderança e metas do departamento"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
                 >
-                  Editar
-                </button>
-                <button
-                  onClick={() => setDetailsDept(dept)}
-                  className="flex items-center gap-1 text-xs font-bold px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xs cursor-pointer"
-                  style={{ color: theme.primaryHex }}
-                >
-                  <span>Gerenciar Equipe</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <span>Editar departamento</span>
                 </button>
               </div>
             </div>

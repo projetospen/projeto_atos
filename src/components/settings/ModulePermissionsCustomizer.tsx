@@ -792,7 +792,7 @@ export const ModulePermissionsCustomizer: React.FC<ModulePermissionsCustomizerPr
                                   )}
                                 </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  Coordenação de ministérios (Louvor, Diaconia, EBD, Mídia, Kids), metas, líderes e orçamentos.
+                                  Coordenação de ministérios (Louvor, Diaconia, EBD, Mídia, Kids), metas, líderes e caixa do departamento com controle de gastos.
                                 </p>
                               </div>
                             </div>

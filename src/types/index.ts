@@ -81,7 +81,8 @@ export interface Department {
   viceLeaderMemberId?: string;
   meetingSchedule?: string; // ex: "Terças às 19h30"
   meetingLocation?: string;
-  monthlyBudget?: number;
+  initialCash?: number; // Saldo / Fundo de Caixa do Departamento
+  monthlyBudget?: number; // Mantido para compatibilidade legado
   goals?: string[];
   bannerUrl?: string;
 }
@@ -148,6 +149,8 @@ export type TransactionCategory =
   | 'material_ebd'
   | 'equipamentos_som_multimidia'
   | 'acao_social_cestas'
+  | 'despesa_departamento'
+  | 'verba_departamento'
   | 'outros';
 
 export interface FinancialTransaction {

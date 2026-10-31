@@ -12,13 +12,14 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addTransaction, members, adminRole, theme } = useChurch();
+  const { addTransaction, members, departments, adminRole, theme } = useChurch();
 
   const [type, setType] = useState<TransactionType>('entrada');
   const [category, setCategory] = useState<TransactionCategory>('dizimo');
   const [amount, setAmount] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [memberId, setMemberId] = useState<string>('');
+  const [departmentId, setDepartmentId] = useState<string>('');
   const [date, setDate] = useState<string>('2026-10-20');
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'dinheiro' | 'cartao' | 'transferencia' | 'boleto'>('pix');
 
@@ -37,6 +38,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
       amount: numAmount,
       description: description.trim() || (type === 'entrada' ? 'Contribuição eclesiástica' : 'Despesa operacional'),
       memberId: memberId || undefined,
+      departmentId: departmentId || undefined,
       date,
       paymentMethod,
       receiptNumber: receiptNum,
@@ -103,6 +105,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     <option value="oferta_missoes">Oferta Missionária</option>
                     <option value="campanha_construcao">Campanha de Construção / Reforma</option>
                     <option value="cantina_eventos">Cantina & Eventos</option>
+                    <option value="verba_departamento">Aporte / Verba para Caixa de Departamento</option>
                     <option value="outros">Outras Entradas</option>
                   </>
                 ) : (
@@ -116,6 +119,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                     <option value="material_ebd">Material Didático EBD / Kids</option>
                     <option value="equipamentos_som_multimidia">Equipamentos Som / Multimídia</option>
                     <option value="acao_social_cestas">Ação Social & Cestas Básicas</option>
+                    <option value="despesa_departamento">Gasto / Despesa de Departamento</option>
                     <option value="outros">Outras Despesas</option>
                   </>
                 )}
@@ -135,6 +139,30 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                 className="w-full px-3 py-2 text-sm font-bold text-slate-800 border border-slate-200 rounded-xl focus:outline-hidden"
               />
             </div>
+          </div>
+
+          {/* Department Cash Box linkage */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">
+              Vincular ao Caixa do Departamento (Opcional)
+            </label>
+            <select
+              value={departmentId}
+              onChange={e => setDepartmentId(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-hidden text-slate-700 bg-white"
+            >
+              <option value="">Nenhum (Movimentação Geral da Igreja)</option>
+              {departments.map(d => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+            {departmentId && (
+              <p className="text-[11px] text-blue-600 mt-1">
+                ℹ️ Este lançamento atualizará em tempo real o saldo e histórico do Caixa de {departments.find(d => d.id === departmentId)?.name}.
+              </p>
+            )}
           </div>
 
           {type === 'entrada' && (

@@ -56,6 +56,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-8",
     meetingSchedule: "Sábados às 16h00 (Ensaios)",
     meetingLocation: "Templo Principal",
+    initialCash: 2200,
     monthlyBudget: 2200,
     goals: [
       "Gravação do primeiro EP de canções autorais",
@@ -74,6 +75,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-5",
     meetingSchedule: "1º Domingo do Mês às 08h00",
     meetingLocation: "Salão Anexo B",
+    initialCash: 800,
     monthlyBudget: 800,
     goals: [
       "Implantação do kit de boas-vindas com Bíblia de bolso para visitantes",
@@ -92,6 +94,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-9",
     meetingSchedule: "Domingos nos cultos matutino e noturno",
     meetingLocation: "Salas Kids 1, 2 e Berçário",
+    initialCash: 1500,
     monthlyBudget: 1500,
     goals: [
       "Realização da Escola Bíblica de Férias (EBF)",
@@ -110,6 +113,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-10",
     meetingSchedule: "Sábados às 19h30",
     meetingLocation: "Templo Principal / Espaço Conectar",
+    initialCash: 1800,
     monthlyBudget: 1800,
     goals: [
       "Acampamento anual de jovens de Carnaval",
@@ -128,6 +132,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-11",
     meetingSchedule: "Domingos às 09h00",
     meetingLocation: "Todas as salas de aula",
+    initialCash: 1200,
     monthlyBudget: 1200,
     goals: [
       "Atingir 80% dos membros matriculados na EBD",
@@ -146,6 +151,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-12",
     meetingSchedule: "Quintas-feiras às 18h30 (Treinamento técnico)",
     meetingLocation: "Cabine Técnica",
+    initialCash: 2500,
     monthlyBudget: 2500,
     goals: [
       "Upgrade da placa de captura e câmeras 4K",
@@ -164,6 +170,7 @@ export const initialDepartments: Department[] = [
     viceLeaderMemberId: "mem-4",
     meetingSchedule: "Terceiro sábado às 10h00",
     meetingLocation: "Salão Social",
+    initialCash: 3500,
     monthlyBudget: 3500,
     goals: [
       "Distribuição de 60 cestas básicas por mês a famílias cadastradas",
@@ -796,6 +803,66 @@ export const initialTransactions: FinancialTransaction[] = [
     description: "Reparo no ar-condicionado central e recarga de gás",
     paymentMethod: "pix",
     receiptNumber: "REC-SER-9912",
+    createdBy: "Carlos Alberto Mendes"
+  },
+  {
+    id: "tx-10",
+    date: "2026-10-19",
+    type: "saida",
+    category: "equipamentos_som_multimidia",
+    amount: 380.00,
+    description: "Cabos balanceados XLR e microfone sem fio para o Louvor",
+    paymentMethod: "pix",
+    departmentId: "dep-1",
+    receiptNumber: "REC-LOUV-01",
+    createdBy: "Diác. Samuel Costa"
+  },
+  {
+    id: "tx-11",
+    date: "2026-10-21",
+    type: "saida",
+    category: "cantina_eventos",
+    amount: 245.50,
+    description: "Lanches e copos descartáveis para o culto dos Jovens",
+    paymentMethod: "cartao",
+    departmentId: "dep-4",
+    receiptNumber: "REC-JOV-02",
+    createdBy: "Líder Matheus Prado"
+  },
+  {
+    id: "tx-12",
+    date: "2026-10-22",
+    type: "saida",
+    category: "despesa_departamento",
+    amount: 310.00,
+    description: "Materiais de pintura, E.V.A. e lembrancinhas para o ATOS Kids",
+    paymentMethod: "pix",
+    departmentId: "dep-3",
+    receiptNumber: "REC-KID-01",
+    createdBy: "Líder Sarah Nogueira"
+  },
+  {
+    id: "tx-13",
+    date: "2026-10-23",
+    type: "entrada",
+    category: "verba_departamento",
+    amount: 400.00,
+    description: "Venda de doces beneficentes para a Rede de Jovens",
+    paymentMethod: "pix",
+    departmentId: "dep-4",
+    receiptNumber: "REC-JOV-03",
+    createdBy: "Líder Matheus Prado"
+  },
+  {
+    id: "tx-14",
+    date: "2026-10-24",
+    type: "saida",
+    category: "equipamentos_som_multimidia",
+    amount: 195.00,
+    description: "Adaptadores HDMI e pilhas recarregáveis para câmeras e mesas",
+    paymentMethod: "pix",
+    departmentId: "dep-6",
+    receiptNumber: "REC-MID-01",
     createdBy: "Carlos Alberto Mendes"
   }
 ];
